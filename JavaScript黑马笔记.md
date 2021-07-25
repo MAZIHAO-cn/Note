@@ -2118,6 +2118,7 @@ JS中创建数组有两种方式：
     cook('酸辣肥牛');
     cook('酸辣鱼');
   </script>
+	//未完善
 ```
 
 函数的参数可以有，也可以没有，个数不限
@@ -2188,4 +2189,90 @@ JS中创建数组有两种方式：
 #### 9.4函数的返回值
 
 ##### 9.4.1 return语句
+
+有的时候，我们会希望函数将值返回给调用者，此时通过使用return语句就可以实现。
+
+语法结构：
+
+```js
+  <script>
+    function 函数名() {
+      return 需要返回的结果;
+    }
+    函数名();
+  </script>
+```
+
+1、我们函数只是实现某种功能，最终的结果需要返回给函数的调用者函数名()	通过return来实现的
+
+2、只要函数遇到return，就把后面的结果	返回给函数的调用者	函数名() = return 后面的结果
+
+3、代码验证：
+
+```js
+  <script>
+    function getResult() {
+      return 666;
+    }
+    getResult();
+    console.log(getResult());
+  </script>
+```
+
+```js
+//完善上面的代码
+  <script>
+    function cook(aru) {
+      return aru;
+    }
+    console.log(cook('酸辣肥牛'));
+    console.log(cook('酸辣鱼'));
+  </script>
+```
+
+4、求任意两个数的和
+
+```js
+  <script>
+    function getSum(num1, num2) {
+      return num1 + num2;
+    }
+    console.log(getSum(2, 3));
+  </script>
+```
+
+##### 9.4.2-1案例：利用函数求任意两个数的最大值
+
+```js
+  <script>
+    function getMaxNum(num1, num2) {
+      return num1 > num2 ? num1 : num2;
+    }
+    console.log(getMaxNum(2, 4));
+    console.log(getMaxNum(11, 2));
+  </script>
+```
+
+##### 9.4.2-2案例：利用函数求任意一个数组中的最大值
+
+求数组[5, 2, 99, 101, 67, 77]中的最大数值。
+
+```js
+  <script>
+    function getArrMax(arr) {
+      var max = arr[0];
+      for (var i = 1; i <= arr.length; i++) {
+        if (arr[i] > max) {
+          max = arr[i];
+        }
+      }
+      return max;
+    }
+    console.log(getArrMax([5, 2, 99, 101, 67, 77]));
+    console.log(getArrMax([1, 3, 9, 8]));
+    //在我们实际开发里面，我们经常用一个变量来接收 函数的返回结果 使用更简单
+    var re = getArrMax([5, 2, 99, 101, 67, 77]);
+    console.log(re);
+  </script>
+```
 
