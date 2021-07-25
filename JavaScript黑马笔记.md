@@ -1907,5 +1907,15 @@ JS中创建数组有两种方式：
 
 + 可以通过修改数组索引的方式追加数组元素。
 
++ 不能直接给数组名赋值，否则会覆盖以前的数据。
 
+```js
+  <script>
+    var arr = ['red', 'green', 'blue'];
+    console.log(arr);  //print: ["red", "green", "blue"]
+    arr[4] = 'pink';
+    console.log(arr);  //print: ["red", "green", "blue", empty, "pink"]
+  </script>
+```
 
+这种方式也是我们最常用的一种方式。
