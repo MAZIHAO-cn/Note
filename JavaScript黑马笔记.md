@@ -2312,5 +2312,5 @@ return语句之后的代码不被执行
 
 #### 9.5通过榨汁机看透函数
 
-<img src="/Users/mazihao/Downloads/1.png" alt="1" style="zoom:45%;" />
+[![WRFWaq.png](https://z3.ax1x.com/2021/07/25/WRFWaq.png)](https://imgtu.com/i/WRFWaq)
 
