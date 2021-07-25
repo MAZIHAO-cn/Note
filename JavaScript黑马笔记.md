@@ -2269,10 +2269,48 @@ JS中创建数组有两种方式：
       return max;
     }
     console.log(getArrMax([5, 2, 99, 101, 67, 77]));
-    console.log(getArrMax([1, 3, 9, 8]));
+    //console.log(getArrMax([1, 3, 9, 8]));
     //在我们实际开发里面，我们经常用一个变量来接收 函数的返回结果 使用更简单
     var re = getArrMax([5, 2, 99, 101, 67, 77]);
     console.log(re);
   </script>
 ```
+
+##### 9.4.3 return终止函数
+
+return语句之后的代码不被执行
+
+##### 9.4.4 return的返回值
+
+**return只能返回一个值**。如果用逗号隔开多个值，以**最后一个**为准。
+
+##### 9.4.4-1案例：我们求任意两个数的加减乘除结果
+
+```js
+  <script>
+    function getResult(num1, num2) {
+      return [num1 + num2, num1 - num2, num1 * num2, num1 / num2];
+    }
+    var re = getResult(1,2);  //返回的是一个数组
+    console.log(re);
+  </script>
+```
+
+##### 9.4.5函数没有return返回undefined
+
+函数都是有返回值的
+
+1、如果有return则返回return后面的值
+
+2、如果没有return则返回undefined
+
+##### 9.4.6 break、continue、return的区别
+
++ break：结束当前的循环体（如for、while）
++ continue：跳出本次循环，继续执行下次循环（如for、while）
++ return：不仅可以退出循环，还能够返回return语句中的值，同时还可以结束当前的函数体内的代码
+
+#### 9.5通过榨汁机看透函数
+
+<img src="/Users/mazihao/Downloads/1.png" alt="1" style="zoom:45%;" />
 
