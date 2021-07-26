@@ -2339,3 +2339,165 @@ return语句之后的代码不被执行
     fn(5, 4, 3, 2, 1);
   </script>
 ```
+
+##### 9.6.1案例：利用函数求任意个数的最大值（不是用数组）
+
+```js
+  <script>
+    function getMax() {
+      var max = arguments[0];
+      for (var i = 1; i < arguments.length; i++) {
+        max = arguments[i] > max ? arguments[i] : max;
+      }
+      return max;
+    }
+    console.log(getMax(1, 2, 3));
+    console.log(getMax(1, 2, 3, 4, 5));
+  </script>
+```
+
+#### 9.7函数案例
+
+##### 9.7.1案例一：利用函数封装方式，翻转任意一个数组
+
+```js
+  <script>
+    function reverse(arr) {
+      var new_arr = [];
+      for(var i = arr.length - 1; i >= 0; i--) {
+        new_arr[new_arr.length] = arr[i];
+      }
+      return new_arr;
+    }
+    var arr1 = reverse([1, 2, 5, 6, 9]);
+    console.log(arr1);
+    var arr2 = reverse(['pink', 'red', 'green', 'purple']);
+    console.log(arr2);
+  </script>
+```
+
+##### 9.7.2案例二：利用函数封装方式，对数组排序——冒泡排序
+
+```js
+  <script>
+    function getBubbleSort(arr) {
+      var new_arr = [];
+      for (var i = 0; i < arr.length - 1; i++) {
+        for(var j = 0; j < arr.length - i - 1; j++) {
+          if (arr[j] > arr[j + 1]) {
+            var temp = arr[j];
+            arr[j] = arr[j + 1];
+            arr[j + 1] = temp;
+          }
+        }
+      }
+      return arr;
+    }
+    var arr1 = [1, 4, 5, 2, 3];
+    console.log(getBubbleSort(arr1));
+    var arr2 = [11, 7, 2, 999];
+    console.log(getBubbleSort(arr2));
+  </script>
+```
+
+##### 9.7.3案例三：判断闰年
+
+要求：输入一个年份，判断是否是闰年（闰年：能被4整除并且不能被100整数，或者能被400整除）
+
+```js
+  <script>
+    function isRunYear(year) {
+      // 要求：如果是闰年，我们返回true 否则返回false
+      // 方式一：三元表达式
+      var flag;
+      flag = year % 4 == 0 && year % 100 != 0 || year % 400 == 0 ? true : false;
+      // 方式二：if判断语句
+      // var flag = false;
+      // if (year = year % 4 == 0 && year % 100 != 0 || year % 400 == 0) {
+      //   flag = true;
+      // }
+      return flag;
+    }
+    console.log(isRunYear(2000));
+  </script>
+```
+
+##### 9.7.4函数可以调用另外一个函数
+
+因为每个函数都是独立的代码块，用于完成特殊任务，因此经常会用到函数相互调用的情况。
+
+```js
+  <script>
+    function fn1() {
+      console.log(11);
+      fn2();  //在fn1 函数里面调用了 fn2 函数
+    }
+    fn1();	//print: 11	22
+    function fn2() {
+      console.log(22);
+    }
+    fn2();	//print: 22
+  </script>
+```
+
+##### 9.7.5案例四：用户输入年份，输出当前年份2月份的天数
+
+```js
+  <script>
+    function backDay() {
+      var year = prompt('请您输入年份：');
+      if (isRunYear(year)) {
+        alert('您输入的年份是闰年,二月有29天。');
+      } else {
+        alert('您输入的年份不是闰年,二月有28天。');
+      }
+    }
+    backDay();
+    // 判断是否闰年的函数
+    function isRunYear(year) {
+      // 要求：如果是闰年，我们返回true 否则返回false
+      // 方式一：三元表达式
+      var flag;
+      flag = year % 4 == 0 && year % 100 != 0 || year % 400 == 0 ? true : false;
+      // 方式二：if判断语句
+      // var flag = false;
+      // if (year = year % 4 == 0 && year % 100 != 0 || year % 400 == 0) {
+      //   flag = true;
+      // }
+      return flag;
+    }
+  </script>
+```
+
+#### 9.8函数的两种声明方式
+
+1、利用函数关键字自定义函数（命名函数）
+
+2、函数表达式（匿名函数）
+
+语法结构：
+
+```js
+  <script>
+    var 变量名 = function() {};
+		//eg:
+    var fun = function(aru) {
+      console.log('I\'m function');
+      console.log(aru);
+    }
+    fun('pink');
+  </script>
+```
+
++ fun是变量名	不是函数名
++ 函数表达式声明方式跟声明变量差不多，只不过变量里面存的是值，而函数表达式里面存的是函数
++ 函数表达式也可以进行传递参数
+
+#### 10.JavaScript作用域
+
+##### 10.1作用域
+
+##### 10.2变量的作用域
+
+##### 10.3作用域链
+
