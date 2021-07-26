@@ -2314,3 +2314,28 @@ return语句之后的代码不被执行
 
 [![WRFWaq.png](https://z3.ax1x.com/2021/07/25/WRFWaq.png)](https://imgtu.com/i/WRFWaq)
 
+#### 9.6 arguments使用
+
+当我们不确定有多少个参数传递的时候，可以用**arguments**来获取。在JavaScript中，arguments实际上它是当前函数的一个**内置对象**。所有函数都内置了一个arguments对象，arguments对象中**存储了传递的所有实参**。
+
+**arguments展示形式是一个伪数组**，因此可以进行遍历。伪数组具有以下特点：
+
++ 具有length属性
++ 按索引方式储存数据
++ 不具有数组的push、pop等方法
+
+```js
+  <script>
+    function fn() {
+      console.log(arguments); // 里面存储了所有传递过来的参数 arguments = [1, 2, 3]
+      console.log(arguments.length);
+      console.log(arguments[1]);
+      // 我们可以按照数组的方式遍历arguments
+      for (var i = 0; i < arguments.length; i++) {
+        console.log(arguments[i]);
+      }
+    }
+    fn(1, 2, 3);
+    fn(5, 4, 3, 2, 1);
+  </script>
+```
