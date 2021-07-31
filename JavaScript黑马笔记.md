@@ -2493,11 +2493,1342 @@ return语句之后的代码不被执行
 + 函数表达式声明方式跟声明变量差不多，只不过变量里面存的是值，而函数表达式里面存的是函数
 + 函数表达式也可以进行传递参数
 
-#### 10.JavaScript作用域
+### 10.JavaScript作用域
 
-##### 10.1作用域
+#### 10.1作用域
 
-##### 10.2变量的作用域
+##### 10.1.1作用域概述
 
-##### 10.3作用域链
+通常来说，一段程序代码中所用到的名字并不总是有效和可用的，而限定这个名字的**可用性的代码范围**就是这个名字的**作用域**。作用域的使用提高了程序逻辑的局部性，增强了程序的可靠性，减少了名字冲突。
+
+##### 10.1.2 js的作用域（es6）之前
+
++ 全局作用域：整个script标签	或者是一个单独的js文件
++ 局部作用域：在函数内部就是局部作用域。这个代码的名字只在函数内部起效果和作用
+
+##### 10.1.3 es6块级作用域（了解即可）
+
+
+
+#### 10.2变量的作用域
+
+##### 10.2.1变量作用域的分类
+
+在JavaScript中，根据作用域的不同，变量可以分为两种：
+
++ 全局变量：在全局作用域下的变量
++ 局部变量：在局部作用域下的变量。后者在函数内部的变量就是局部变量
+
+**注意**：函数的形参也可以看做是局部变量
+
+从**执行效率**来看全局变量和局部变量
+
+​	1、全局变量	只有浏览器关闭的时候才会销毁，比较占内存资源
+
+​	2、局部变量	当我们程序执行完毕就会销毁，比较节约内存资源
+
+##### 10.2.2全局变量
+
+在全局作用域下声明的变量叫做**全局变量**（**在函数外部定义的变量**）。
+
++ 全局变量在代码的任何位置都可以使用
++ 在全局作用域下var声明的变量是全局变量
++ 特殊情况下，在函数内不使用var声明的变量也是全局变量（不建议使用）
+
+##### 10.2.3局部变量
+
+在局部作用域下声明的变量叫做**局部变量**（**在函数内部定义的变量**）
+
++ 局部变量只能在该函数**内部**使用
++ 在函数内部var声明的变量是局部变量
++ 函数的**形参**实际上就是局部变量
+
+##### 10.2.4全局变量和局部变量的区别
+
++ 全局变量：在任何一个地方都可以使用，只有在浏览器关闭时才会被销毁，因此比较占内存
++ 局部变量：只能在函数内部使用，当其所在的代码块被执行时，会被初始化；当代码块运行结束后，就会被销毁，因此更节省内存空间
+
+#### 10.3作用域链
+
+##### 10.3.1概述
+
++ 只要是代码，就至少有一个作用域
++ 写在函数内部的局部作用域
++ 如果函数中还有函数，那么在这个作用域中就又可以诞生一个作用域
++ 根据在内部函数可以访问外部函数变量的这种机制，用链式查找决定哪些数据能被内部函数访问，就称为作用域链
+
+##### 10.3.2-1案例：结果是几？
+
+```js
+  <script>
+    function fn1() {
+      var num = 123;
+      function fn2() {
+        console.log(num);
+      }
+      fn2();
+    }
+    var num = 456;
+    fn1();    //print: 123
+  </script>
+```
+
+##### 10.3.2-2案例：结果是几？
+
+```js
+  <script>
+    var a = 1;
+    function fn1() {
+      var a = 2;
+      var b = '22';
+      fn2();
+      function fn2() {
+        var a = 3;
+        fn3();
+        function fn3() {
+          var a = 4;
+          console.log(a);         //print: 4
+          console.log(typeof a);  //print: Number
+          console.log(b);         //print: '22'
+          console.log(typeof b);  //print: String
+        }
+      }
+    }
+    fn1();  //print: a: 4  b: '22'
+  </script>
+```
+
+### 11.预解析
+
+```js
+  <script>
+    // 1 问
+    console.log(num);	//print: Uncaught ReferenceError: num is not defined
+    // 2 问
+    console.log(num); //print: undefined 坑 1
+    var num = 20;
+    // 3 问 
+    fn();             //print: 11
+    function fn() {
+      console.log(11);
+    }
+    // 4 问
+    fun();            //print: Uncaught TypeError: fun is not a function 坑 2
+    var fun = function() {
+      console.log(22)
+    }
+  </script>
+```
+
+#### 11.1预解析
+
+JavaScript代码是由浏览器中的JavaScript解析器来执行的。JavaScript解析器在运行JavaScript代码的时候分为两步：预解析和代码执行
+
++ 预解析：js引擎会把js里面所有的 var 还有 function 提升到当前作用域的最前面
++ 代码执行：按照代码书写的顺序从上往下执行
++ 函数表达式    调用必须写在函数表达式的下面
+
+#### 11.2变量预解析和函数预解析
+
+预解析分为：变量预解析（变量提升）和	函数预解析（函数提升）
+
++ 变量提升：就是把所有的变量声明提升到当前的作用域最前面	不提升赋值操作	
++ 函数提升：就是把所有的函数声明提升到当前的作用域最前面    不调用函数
+
+#### 11.3预解析案例
+
+##### 11.3.1结果是几？
+
+```js
+  <script>
+    var num = 10;
+    fun();    //print: undefined
+    function fun() {
+      console.log(num);
+      var num = 20;
+    }
+  </script>
+```
+
+##### 11.3.2结果是几？
+
+```js
+  <script>
+    var num = 10;
+    function fn() {
+      console.log(num);   //print: undefined
+      var num = 20;     
+      console.log(num);   //print: 20
+    }
+    fn();
+  </script>
+```
+
+##### 11.3.3结果是几？
+
+```js
+  <script>
+    var a = 18;
+    f1();
+    function f1() {
+      var b = 9;
+      console.log(a);   //print: undefined
+      console.log(b);   //print: 9
+      var a = '123';
+    }
+  </script>
+```
+
+##### 11.3.4结果是几？
+
+```js
+  <script>
+    f1();
+    console.log(c);   //print: 9
+    console.log(b);   //print: 9
+    console.log(a);   //print: Uncaught ReferenceError: a is not defined
+    function f1() {
+      var a = b = c = 9; // 相当于 var a = 9; b = 9; c = 9; b 和 c 直接赋值 没有var声明 当全局变量看
+      // 集体声明：var a = 9, b = 9, c = 9;
+      console.log(a); //print: 9
+      console.log(b); //print: 9
+      console.log(c); //print: 9
+    }
+  </script>
+```
+
+### 12.对象
+
+#### 12.1对象
+
+##### 12.1.1什么是对象？
+
+在JavaScript中，对象是一组无序的相关属性和方法的集合，所有的事物都是对象，例如字符串、数值、数组、函数等。
+
+对象是由**属性**和**方法**构成的。
+
++ 属性：事物的**特征**，在对象中用**属性**来表示（常用名词）
++ 方法：事物的**行为**，在对象中用**方法**来表示（常用动词）
+
+##### 12.1.2为什么需要对象？
+
+保存一个值时，可以使用**变量**，保存多个值（一组值）时，可以使用**数组**。如果保存一个人的完整信息呢？
+
+JS中的对象表达结构更清晰，更强大
+
+#### 12.2创建对象的三种方式
+
+在JavaScript中，现阶段我们可以采用三种方式创建对象（object）。
+
++ 利用**字面量**创建对象
++ 利用**new Object**创建对象
++ 利用**构造函数**创建对象
+
+##### 12.2.1利用字面量创建对象
+
+**对象字面量**：就是花括号{ }里面包含了表达这个具体事物（对象）的属性和方法。
+
+语法结构：
+
+```js
+  <script>
+    // var obj = {}; //创建一个空的对象
+    var obj = {
+      uname: '张三疯',
+      age: 18,
+      sex: '男',
+      sayHi: function() {
+        console.log('Hi~');
+      }
+    }
+  </script>
+```
+
++ 里面的属性或者方法我们采用键值对的形式		键（属性名）：值（属性值）
++ 多个属性或者方法中间用逗号隔开的
++ 方法冒号后面跟的是一个匿名函数
+
+使用对象：
+
++ 1、调用对象的属性	我们采取对象名 . 属性名	. 我们理解为“的”
+
++ ```js
+  	<script>
+  		console.log(obj.uname);
+  	</script>
+  ```
+
++ 2、调用属性还有一种方法    对象名[ '属性名' ]
+
++ ```js
+    <script>
+      console.log(obj['uname']);
+    </script>
+  ```
+
++ 3、调用对象的方法    sayHi。  对象名 . 方法名( )    千万别忘记添加小括号
+
++ ```js
+    <script>
+      obj.sayHi();
+    </script>
+  ```
+
+##### 12.2.2课堂案例：请按照要求写出对象。
+
+请用对象字面量的形式创建一个名字为可可的狗对象。
+
+具体信息如下：
+
++ 姓名：可可
++ 类型（type）：阿拉斯加犬
++ 年龄：5岁
++ 颜色：棕色
++ 技能：汪汪汪（bark），演电影（showFilm）
+
+```js
+  <script>
+    var dog = {
+      dogName: '可可',
+      type: '阿拉斯加犬',
+      age: 5,
+      color: '棕色',
+      bark: function() {
+        console.log('汪汪汪');
+      },
+      showFilm: function() {
+        console.log('演电影');
+      } 
+    }
+    console.log(dog.dogName);
+    console.log(dog.type);
+    console.log(dog.age + '岁');
+    console.log(dog.color);
+    dog.bark();
+    dog.showFilm();
+  </script>
+```
+
+##### 12.2.4变量、属性、函数、方式总结（解惑）
+
+变量和属性的相同点：
+
+​		它们都是用来存储数据的
+
+变量和属性的不同点：
+
+​		变量：单独声明并赋值	使用的时候直接写变量名	单独存在
+
+​		属性：在对象里面的不需要声明的	使用的时候必须是	对象 . 属性
+
+函数和方法的相同点：
+
+​		都是实现某种功能	做某件事
+
+函数和方法的不同点：
+
+​		函数：单独声明并调用	函数名( )	单独存在
+
+​		方法：在对象里面	调用的时候	对象 . 方法名( )
+
+##### 12.2.5利用new Object创建对象
+
+跟我们之前学的new Array( ) 原理一致
+
+语法结构：
+
+```js
+  <script>
+    var obj = new Object(); // 创建了一个空的对象
+    obj.uname = '张三疯';
+    obj.age = 18;
+    obj.sex = '男';
+    obj.sayHi = function () {
+      console.log('Hi~');
+    };
+    console.log(obj.uname);
+    console.log(obj['sex']);
+    obj.sayHi();
+  </script>
+```
+
++ 我们是利用	等号赋值的方法	添加对象的属性和方法
++ 每个属性和方法之间用    分号结束
+
+##### 12.2.6课堂案例：请按照要求写出对象
+
+请用new Object形式创建一个鸣人对象
+
+具体信息如下：
+
++ 姓名：鸣人
++ 性别：男
++ 年龄：19岁
++ 技能（skill）：影分身术
+
+```js
+  <script>
+    var person = new Object();
+    person.uname = '鸣人';
+    person.sex = '男';
+    person.age = 19;
+    person.skill = function() {
+      console.log('影分身术');
+    }
+    console.log(person.uname);
+    console.log(person.sex);
+    console.log(person['age'] + '岁');
+    person.skill();
+  </script>
+```
+
+##### 12.2.7利用构造函数创建对象
+
+我们为什么需要使用构造函数
+
+就是因为我们前面两种创建对象的方式一次只能创建一个对象
+
+因为我们一次创建一个对象，里面很多的属性和方法是大量相同的	我们只能复制
+
+因此我们可以利用函数的方法	重复这些相同的代码	我们就把这个函数称为 构造函数
+
+又因为这个函数不一样，里面封装的不是普通代码，而是	对象
+
+构造函数	就是把我们对象里面一些相同的属性和方法抽象出来封装到函数里面
+
+**构造函数**：是一种特殊的函数，主要用来初始化对象，即为对象成员变量赋初始值，它总与new运算符一起使用。我们可以把对象中一些公共的属性和方法抽取出来，然后封装到这个函数里面。
+
+语法结构：
+
+```js
+  <script>
+    function 构造函数名() {
+      this.属性 = 值;
+      this.方法 = function() {};
+    }
+    new 构造函数名();
+  </script>
+```
+
+```js
+  <script>
+    // 我们需要创建四大天王的对象 相同的属性：名字  年龄  性别    相同的方法：唱歌
+    // 构造函数：
+    function Star(uname, age, sex) {
+      this.name = uname;
+      this.age = age;
+      this.sex = sex;
+      this.sing = function (song) {
+        console.log(song);
+      }
+    }
+		// 对象：
+    var ldh = new Star('刘德华', 18, '男'); // 调用函数返回的是一个对象
+    // console.log(typeof ldh);
+    console.log(ldh.name);
+    console.log(ldh['sex']);
+    ldh.sing('冰雨');
+    var zxy = new Star('张学友', 19, '男');
+    console.log(zxy.name);
+    console.log(zxy['age']);
+  </script>
+```
+
++ 构造函数的名字首字母要大写
++ 我们构造函数不需要return  就可以返回结果
++ 我们调用构造函数  必须使用 new
++ 我们只要new Star()  调用函数就创建一个对象  ldh  {}
++ 我们的属性和方法前面必须添加  this
+
+##### 12.2.8课堂案例：请按照要求创建对象
+
+利用构造函数创建两个英雄对象。函数中的公共部分包括：姓名属性(name)，类型属性(type)，血量属性(blood)和攻击属性(attack)。
+
+英雄对象的信息如下：
+
++ 廉颇	力量型	500血量	攻击：近战
++ 后裔    射手型    100血量    攻击：远程
+
+```js
+  <script>
+    function Hero(name, type, blood, attack) {
+      this.name = name;
+      this.type = type;
+      this.blood = blood;
+      this.attack = attack;
+    }
+    var lp = new Hero('廉颇', '力量型', 500, '近战');
+    console.log(lp.name);
+    console.log(lp.type);
+    console.log(lp.blood + '血量');
+    console.log(lp.attack);
+    var hy = new Hero('后裔', '射手型', 100, '远程');
+    console.log(hy.name);
+    console.log(hy.type);
+    console.log(hy.blood + '血量');
+    console.log(hy.attack);
+  </script>
+```
+
+##### 12.2.9构造函数和对象
+
++ 构造函数，如Stars()，抽象了对象的公共部分，封装到了函数里面，它泛指某一大类（class）
++ 创建对象，如new Stars()，特指某一个，通过new关键字创建对象的过程我们也称为对象实例化
+
+构造函数：泛指的某一大类    它类似于java语言里面的类（class）
+
+对象： 特指   是一个具体的事物。
+
+我们利用构造函数创建对象的过程我们也称之为对象的实例化
+
+#### 12.3new关键字
+
+执行过程：
+
+1、new构造函数可以在内存中创建一个空的对象
+
+2、this就会指向刚才创建的空对象
+
+3、执行构造函数里面的代码	给这个空对象添加属性和方法
+
+4、返回这个对象（所以构造函数里面不需要return）
+
+#### 12.4遍历对象属性
+
+**for...in 语句**用于对数组或者对象的属性进行循环操作
+
+语法结构：
+
+```js
+  <script>
+    for (变量 in 对象) {
+      
+    }
+  </script>
+```
+
+```js
+  <script>
+    var obj = {
+      name: 'pink老师',
+      age: 18,
+      sex: '男',
+      fn: function() {
+        
+      }
+    }
+    // console.log(obj);
+    for (var k in obj) {
+      console.log(k); // k 变量 输出  得到的是 属性名
+      console.log(obj[k]);  // obj[k] 得到的是  属性值
+    }
+  </script>
+```
+
+我们使用for...in 里面的变量	我们喜欢写 k 或者 key
+
+#### 12.5对象小结
+
+1、对象可以让代码结构更清晰
+
+2、对象复杂数据类型object
+
+3、本质：对象就是一组无序的相关属性和方法的集合
+
+4、构造函数泛指某一大类，比如苹果，不管是红苹果还是绿苹果，都统称为苹果
+
+5、对象实例特指一个事物，比如这个苹果，正在给你们讲课的pink老师等
+
+6、for...in 语句用于对对象的属性进行循环操作
+
+#### 12.6作业
+
+1、创建一个对象，该对象要有颜色、重量、品牌、型号，可以看电影、听音乐、打游戏和敲代码。
+
+```js
+  <script>
+    function Obj(color, weight, brand, type) {
+      this.color = color;
+      this.weight = weight;
+      this.brand = brand;
+      this.type = type;
+      this.showFilm = function() {
+        console.log('看电影');
+      };
+      this.sing = function() {
+        console.log('听音乐');
+      };
+      this.playGame = function() {
+        console.log('打游戏');
+      };
+      this.typeCode = function() {
+        console.log('敲代码');
+      };
+    };
+    var obj = new Obj();
+  </script>
+```
+
+2、创建一个按钮对象，该对象需要包含宽、高、背景颜色和点击行为。
+
+```js
+  <script>
+    function Button(width, height, bgcolor) {
+      this.width = width;
+      this.height = height;
+      this.bgcolor = bgcolor;
+      this.onclick = function() {
+        console.log('点击行为');
+      };
+    };
+    var btn = new Button();
+  </script>
+```
+
+3、创建一个车的对象，该对象要有重量、颜色、可以载人、拉货和耕田。
+
+```js
+  <script>
+    function Car(weight, color) {
+      this.weight = weight;
+      this.color = color;
+      this.Manned = function() {
+        console.log('可载人');
+      };
+      this.pullgoods = function() {
+        console.log('可拉货');
+      };
+      this.ploughing = function() {
+        console.log('可耕田');
+      };
+    };
+    var car = new Car();
+  </script>
+```
+
+4、写一个函数，实现反转任意数组。
+
+```js
+  <script>
+    function Reverse(arr) {
+      var newArray = [];
+      for (var i = arr.length - 1; i >= 0; i--) {
+        newArray[newArray.length] = arr[i];
+      }
+      return newArray;
+    }
+    var arr = Reverse([1, 3, 2, 4, 5]);
+    console.log(arr);
+  </script>
+```
+
+5、写一个函数，实现对数字数组的排序
+
+```js
+  <script>
+    function Sort(arr) {
+      for (var i = 0; i < arr.length - 1; i++) {
+        // console.log(arr);
+        for (var j = i; j < arr.length - i - 1; j++) {
+          if (arr[j] > arr[j + 1]) {
+            var temp = arr[j];
+            arr[j] = arr[j + 1];
+            arr[j + 1] = temp;
+          }
+        }
+      }      
+      return arr;
+    }
+    var sort = Sort([1, 44, 3, 5]);
+    console.log(sort);
+  </script>
+```
+
+6、小组项目：做一个简易计算器
+
+```js
+  <script>
+    var choose = parseInt(prompt('欢迎使用简易计算器：\n1.加法运算：\n2.减法运算：\n3.乘法运算：\n4.除法运算：\n5.退出：\n请输入您的选项：'));
+    while (choose == 1) {
+      var num1 = parseInt(prompt('请输入第一个数：'));
+      var num2 = parseInt(prompt('请输入第二个数：'));
+      var result = num1 + num2;
+      alert(result);
+      var choose = parseInt(prompt('欢迎使用简易计算器：\n1.加法运算：\n2.减法运算：\n3.乘法运算：\n4.除法运算：\n5.退出：\n请输入您的选项：'));
+    }
+    while (choose == 2) {
+      var num1 = parseInt(prompt('请输入第一个数：'));
+      var num2 = parseInt(prompt('请输入第二个数：'));
+      var result = num1 - num2;
+      alert(result);
+      var choose = parseInt(prompt('欢迎使用简易计算器：\n1.加法运算：\n2.减法运算：\n3.乘法运算：\n4.除法运算：\n5.退出：\n请输入您的选项：'));
+    }
+    while (choose == 3) {
+      var num1 = parseInt(prompt('请输入第一个数：'));
+      var num2 = parseInt(prompt('请输入第二个数：'));
+      var result = num1 * num2;
+      alert(result);
+      var choose = parseInt(prompt('欢迎使用简易计算器：\n1.加法运算：\n2.减法运算：\n3.乘法运算：\n4.除法运算：\n5.退出：\n请输入您的选项：'));
+    }
+    while (choose == 4) {
+      var num1 = parseInt(prompt('请输入第一个数：'));
+      var num2 = parseInt(prompt('请输入第二个数：'));
+      var result = num1 / num2;
+      alert(result);
+      var choose = parseInt(prompt('欢迎使用简易计算器：\n1.加法运算：\n2.减法运算：\n3.乘法运算：\n4.除法运算：\n5.退出：\n请输入您的选项：'));
+    }
+    if (choose == 5) {
+      alert('正在退出');
+    }
+  </script>
+```
+
+### 13.内置对象
+
+#### 13.1内置对象
+
++ JavaScript中的对象分为3种：自定义对象、内置对象、浏览器对象
+
++ 前面两种对象是JS基础内容，属于ECMAScript；第三个浏览器对象属于我们JS独有的，我们 JS API讲解
++ **内置对象**就是指 JS语言自带的一些对象，这些对象供开发者使用，并提供了一些常用的或是最基本而必要的功能（属性和方法）
+
++ 内置对象最大的优点就是帮助我们快速开发
++ JavaScript提供了多个内置对象：Math、Date、Array、String等
+
+#### 13.2查文档
+
+##### 13.2.1 MDN
+
+学习一个内置对象的使用，只要学会其常用成员的使用即可，我们可以通过查文档学习，可以通过MDN/W3C来查询
+
+Mozilla开发者网络（MDN）提供了有关开放网络技术（Open Web）的信息，包括HTML、CSS和万维网及HTML5应用的API
+
+MDN：https://developer.mozilla.org/zh-CN/
+
+##### 13.2.2如何学习对象中的方法
+
+1、查阅该方法的功能
+
+2、查看里面参数的意义和类型
+
+3、查看返回值的意义和类型
+
+4、通过demo进行测试
+
+#### 13.3Math对象
+
+##### 13.3.1概述
+
+Math数学对象	不是一个构造函数，所以我们不需要new来调用	而是直接使用里面的属性和方法即可
+
+```js
+  <script>
+    console.log(Math.PI); // print: 3.141592653589793
+    console.log(Math.max(1, 3, 5)); // print: 5
+    console.log(Math.max(1, 3, 6, 'pink老师')); // print: NaN
+    console.log(Math.max());  // print: -Infinity
+  </script>
+```
+
+##### 13.3.2案例：封装自己的数学对象
+
+利用对象封装自己的数学对象 里面有PI最大值和最小值
+
+```js
+  <script>
+    var myMath = {
+      PI: 3.141592653,
+      max: function() {
+        var max = arguments[0];
+        for(var i = 1; i < arguments.length; i++) {
+          if (arguments[i] > max) {
+            max = arguments[i];
+          }
+        }
+        return max;
+      },
+      min: function() {
+        var min = arguments[0];
+        for(var i = 1; i < arguments.length; i++) {
+          if (arguments[i] < min) {
+            min = arguments[i];
+          }
+        }
+        return min;
+      }
+    }
+    console.log(myMath.PI);
+    console.log(myMath.max(1, 3));
+    console.log(myMath.min(1, 3));
+  </script>
+```
+
+##### 13.3.3 abs（绝对值）方法
+
+```js
+  <script>
+    // 1、绝对值方法
+    console.log(Math.abs(-1));  // print: 1
+    console.log(Math.abs(1));  // print: 1
+    console.log(Math.abs('-1'));  // print: 1   隐式转换  会把字符串型  -1  转换为数字型
+    console.log(Math.abs('pink'));  // print: NaN
+  </script>
+```
+
+##### 13.3.4 floor（向下取整）方法
+
+```js
+  <script>
+    // 向下取整
+    console.log(Math.floor(1.1)); // print: 1
+    console.log(Math.floor(1.9)); // print: 1
+  </script>
+```
+
+##### 13.3.5 ceil（向上取整）方法
+
+```js
+  <script>
+    // 向上取整
+    console.log(Math.ceil(1.1)); // print: 2
+    console.log(Math.ceil(1.9)); // print: 2
+  </script>
+```
+
+##### 13.3.6 round（四舍五入）方法	其他数字都是四舍五入，但是 .5 特殊	它往大了取
+
+```js
+  <script>
+    // 向上取整
+    console.log(Math.round(1.1)); // print: 1
+    console.log(Math.round(1.5)); // print: 2
+    console.log(Math.round(1.9)); // print: 2
+		console.log(Math.round(-1.1)); // print: -1
+		console.log(Math.round(-1.5)); // print: -1
+  </script>
+```
+
+##### 13.3.7 random（随机数）方法
+
++ random()	返回一个随机的小数	0 <= x < 1
+
++ 这个方法里面不跟参数
+
++ 代码验证：
+
++ ```js
+    <script>
+      console.log(Math.random());
+    </script>
+  ```
+
++ 我们想要得到两个数之间的随机整数  并且  包含这2个整数
+
++ ```js
+    <script>
+      function getRandom(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+      }
+      console.log(getRandom(1, 10));
+    </script>
+  ```
+
+案例：随机点名
+
+```js
+  <script>
+    function getRandom(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+    // console.log(getRandom(1, 10));
+    var arr = ['张三丰', '张三', '李四', 'pink老师', '王五'];
+    console.log(arr[getRandom(0, arr.length - 1)]);
+  </script>
+```
+
+##### 13.3.8案例：猜数字游戏
+
+程序随机生成一个1～10之间的数字，并让用户输入一个数字
+
+1、如果大于该数字，就提示，数字大了，继续猜；
+
+2、如果小于该数字，就提示，数字小了，继续猜；
+
+3、如果等于该数字，就提示，猜对了，结束程序。
+
+```js
+  <script>
+    function getRandom(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+    var random = getRandom(1, 10);
+    while (true) {
+      var num = prompt('你来猜? 输入1～10之间的整数');
+      if (num > random) {
+        alert('数字大了，继续猜');
+      } else if (num < random) {
+        alert('数字小了，继续猜');
+      } else {
+        alert('你猜对了');
+        break;
+      }
+    }
+  </script>
+```
+
+##### 13.3.9课下作业：要求用户猜数字
+
+要求用户猜1～50之间的一个数字，但是只有10次猜的机会
+
+```js
+  <script>
+    function getRandom(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+    var random = getRandom(1, 50);
+    var i;
+    for (i = 1; i <= 10; i++) {
+      var num = parseInt(prompt('你来猜? 输入1～50之间的整数'));
+      if (num > random) {
+        alert('数字大了，继续猜，你还有' + (10 - i) + '次机会');
+      } else if (num < random) {
+        alert('数字小了，继续猜，你还有' + (10 - i) + '次机会');
+      } else {
+        alert('你猜对了');
+        break;
+      }
+    }
+    if (i > 10) {
+      alert('对不起，你10次机会已全部用光了');
+    }
+  </script>
+```
+
+#### 13.4日期对象
+
+##### 13.4.1 Date() 概述
+
+Date() 日期对象	是一个构造函数	必须使用new来调用创建我们的日期对象
+
+1、使用Date
+
++ 如果没有参数	返回当前系统的当前时间
+
+```js
+  <script>
+    var date = new Date();
+    console.log(date);
+  </script>
+```
+
+2、参数常用的写法：
+
++ 数字型	2019, 10, 01
++ 字符串型    '2019-10-1 8:8:8'
+
+```js
+  <script>
+    var date1 = new Date(2019, 10, 01);
+    console.log(date1); // 返回的是Nov（十一月）
+    var date2 = new Date('2019-10-1 8:8:8')
+    console.log(date2);
+  </script>
+```
+
+##### 13.4.2日期格式化
+
+需要获取日期指定的部分，所以我们要手动得到这种格式
+
+| 方法名        | 说明                         | 代码               |
+| ------------- | ---------------------------- | ------------------ |
+| getFullYear() | 获取当年                     | dObj.getFullYear() |
+| getMoth()     | 获取当月（0～11）            | dObj.getMonth()    |
+| getDate()     | 获取当天日期                 | dObj.getDate()     |
+| getDay()      | 获取星期几（周日0 到 周六6） | dObj.getDay()      |
+| getHours()    | 获取当前小时                 | dObj.getHours()    |
+| getMinutes()  | 获取当前分钟                 | dObj.getMinutes()  |
+| getSeconds()  | 获取当前秒钟                 | dObj.getSeconds()  |
+
+###### 13.4.2.1格式化日期	年月日
+
+```js
+<script>
+    // 格式化日期	年月日
+    var date = new Date();
+    console.log(date.getFullYear());  // 返回当前日期的年
+    console.log(date.getDate());       // 返回的是几号
+    console.log(date.getMonth() + 1); // 返回的月份小一个月  记得月份加1
+    console.log(date.getDay());       // 周一返回的是1  周六返回的是6 但是周日返回的是0
+    // 我们写一个 2021年 7月 29日 星期三
+    var year = date.getFullYear();
+    var month = date.getMonth() + 1;
+    var dates = date.getDate();
+    var day = date.getDay();
+    var arr = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六',];
+    console.log('今天是' + year + '年' + month + '月' + dates + '日' + arr[day]);  
+  </script>
+```
+
+###### 13.4.2.2格式化日期	时分秒
+
+```js
+  <script>
+    var date = new Date();
+    console.log(date.getHours());   // 时
+    console.log(date.getMinutes()); // 分
+    console.log(date.getSeconds()); // 秒
+    // 要求封装一个函数返回当前的时分秒 格式 08:08:08
+    function getTimer() {
+      var time = new Date();
+      var h = time.getHours();
+      var m = time.getMinutes();
+      var s = time.getSeconds();
+      h = h < 10 ? '0' + h : h;
+      m = m < 10 ? '0' + m : m;
+      s = s < 10 ? '0' + s : s;
+      return h + ':' + m + ':' + s;
+    }
+    console.log(getTimer());
+  </script>
+```
+
+##### 13.4.3获取日期的总的毫秒形式
+
+Date对象是基于1970年1月1日（世界标准时间）起的毫秒数
+
+为什么计算机起始时间从1970年开始？
+
+我们经常利用总的毫秒数来计算时间，因为他更准确
+
+```js
+  <script>
+    // 获得Date总的毫秒数（时间戳） 不是当前时间的毫秒数  而是距离1970年1月1号过了多少毫秒数
+    // 1、通过valueOf() getTime()
+    var date = new Date();
+    console.log(date.valueOf());  // 就是 我们现在的时间 距离1970.1.1 总的毫秒数
+    console.log(date.getTime());
+    // 2、简单的写法
+    var date1 = +new Date();  // +new Date() 返回的就是总的毫秒数
+    console.log(date1);
+    // 3、H5 新增的 获得总的毫秒数
+    console.log(Date.now());
+  </script>
+```
+
+##### 13.4.4案例：倒计时效果
+
+做一个倒计时效果。
+
+案例分析：
+
+​	转换公式如下：
+
++ d = parseInt(总秒数/60/60/24);	//计算天数
++ h = parseInt(总秒数/60/60%24);	//计算小时
++ m = parseInt(总秒数/60%60);	//计算分数
++ s = parseInt(总秒数%60);	//计算当前秒数
+
+```js
+  <script>
+    function countDown(time) {
+      var nowTime = +new Date();  // 返回的是当前时间总的毫秒数
+      var inputTime = +new Date(time);  // 返回的是用户输入时间总的毫秒数
+      var times = (inputTime - nowTime) / 1000;  // times是剩余时间总的秒数
+      var d = parseInt(times/60/60/24);
+      d = d < 10 ? '0' + d : d;
+      var h = parseInt(times/60/60%24);
+      h = h < 10 ? '0' + h : h;
+      var m = parseInt(times/60%60);
+      m = m < 10 ? '0' + m : m;
+      var s = parseInt(times%60);
+      s = s < 10 ? '0' + s : s;
+      return d + '天' + h + '时' + m + '分' + s + '秒';
+    }
+    console.log(countDown('2021-7-30 1:10:00'));
+  </script>
+```
+
+#### 13.5数组对象
+
+##### 13.5.1数组对象的创建
+
+创建数组对象的两种方式：
+
++ 字面量方式
++ new Array()
+
+```js
+  <script>
+    var arr1 = new Array(2);  // 这个2表示数组长度为2 里面有2个空的数组元素
+    console.log(arr1);
+    var arr2 = new Array(2, 3); // 等价于 [2, 3] 这样写表示 里面有2个数组元素 是 2和3
+    console.log(arr2);
+  </script>
+```
+
+##### 13.5.2检测是否为数组
+
+###### 13.5.2-1 instanceof	运算符	他可以用来检测是否为数组
+
+```js
+  <script>
+    var arr = [];
+    var obj = {};
+    console.log(arr instanceof Array);
+    console.log(obj instanceof Object);
+  </script>
+```
+
+```js
+  <script>
+    function reverse(arr) {
+      if (arr instanceof Array) {
+        var new_arr = [];
+        for (var i = arr.length - 1; i >= 0; i--) {
+          new_arr[new_arr.length] = arr[i];
+        }
+        return new_arr; 
+      } else {
+        return 'error 这个参数要求必须是数组格式 [1, 2, 3]';
+      }
+    }
+    var arr1 = reverse([1, 2, 5, 6, 9]);
+    console.log(arr1);
+    var arr2 = reverse(1, 2, 3);
+    console.log(arr2);
+  </script>
+```
+
+###### 13.5.2-2 Array.isArray(参数);
+
+```js
+  <script>
+    var arr = [];
+    var obj = {};
+    // Array.isArray(参数);  H5新增的方法   ie9以上才支持
+    console.log(Array.isArray(arr));  // print: true
+    console.log(Array.isArray(obj));  // print: false
+  </script>
+```
+
+当检测Array实例时，Array.isArray优于instanceof，因为Array.isArray能检测iframes。
+
+##### 13.5.3添加删除数组元素的方法
+
+| 方法名            | 说明                                                   | 返回值               |
+| ----------------- | ------------------------------------------------------ | -------------------- |
+| push(参数1...)    | 末尾添加一个或多个元素，注意修改原数组                 | 并返回新的长度       |
+| pop()             | 删除数组最后一个元素，把数组长度减1 无参数、修改原数组 | 返回它删除的元素的值 |
+| unshift(参数1...) | 向数组的开头添加一个或更多元素，注意修改原数组         | 并返回新的长度       |
+| shift()           | 删除数组的第一个元素，数组长度减1无参数、修改原数组    | 并返回第一个元素的值 |
+
+###### 13.5.3-1 push() 
+
+```js
+  <script>
+    var arr = [1, 2, 3];
+    // arr.push(4, 'pink');
+    console.log(arr);
+    console.log(arr.push(4, 'pink'));
+  </script>
+```
+
++ push()  是可以给数组元素追加新的元素
+
++ push()  参数直接写，数组元素就可以了
++ push完毕之后，返回的结果是  新数组的长度
++ 原数组也会发生变化
+
+###### 13.5.3-2 unshift()
+
+```js
+  <script>
+    var arr = [1, 2, 3];
+    // arr.unshift('red', 'purple');
+    console.log(arr);
+    console.log(arr.unshift('red', 'purple'));
+  </script>
+```
+
++ 在我们数组的开头，添加一个或者多个数组元素
++ unshift()  是可以给数组前面追加新的元素
+
++ unshift()  参数直接写，数组元素就可以了
++ unshift完毕之后，返回的结果是  新数组的长度
++ 原数组也会发生变化
+
+###### 13.5.3-3 pop()
+
+```js
+  <script>
+    var arr = [1, 2, 3];
+    // arr.pop();
+    console.log(arr);
+    console.log(arr.pop());
+  </script>
+```
+
++ pop()  是可以删除数组的最后一个元素    记住一次只能删除一个元素
+
++ pop()  没有参数
++ pop完毕之后，返回的结果是  删除的那个元素
++ 原数组也会发生变化
+
+###### 13.5.3-4 shift()
+
+```js
+  <script>  
+		var arr = [1, 2, 3];
+    // arr.shift();
+    console.log(arr);
+    console.log(arr.shift());
+  </script>
+```
+
++ shift()  是可以删除数组的第一个元素    记住一次只能删除一个元素
+
++ shift()  没有参数
++ shift完毕之后，返回的结果是  删除的那个元素
++ 原数组也会发生变化
+
+##### 13.5.4案例：筛选数组
+
+有一个包含工资的数组[1500, 1200, 2000, 2100, 1800]，要求把数组中工资超过2000的删除，剩余的放到新数组里面
+
+```js
+  <script>
+    var arr = [1500, 1200, 2000, 2100, 1800];
+    var newArr = [];
+    for (var i = 0; i < arr.length; i++) {
+      if (arr[i] < 2000) {
+        newArr.push(arr[i]);
+      }
+    }
+    console.log(newArr);
+  </script>
+```
+
+##### 13.5.5数组排序
+
+| 方法名    | 说明                         | 是否修改原数组                     |
+| --------- | ---------------------------- | ---------------------------------- |
+| reverse() | 颠倒数组中元素的顺序，无参数 | 该方法会改变原来的数组  返回新数组 |
+| sort()    | 对数组的元素进行排序         | 该方法会改变原来的数组  返回新数组 |
+
+###### 13.5.5-1 reverse()
+
+```js
+  <script>
+    var arr = ['pink', 'red', 'blue'];
+    arr.reverse();
+    console.log(arr);
+  </script>
+```
+
+###### 13.5.5-2 sort()
+
+```js
+  <script>
+    var arr = [3, 4, 7, 1];
+    arr.sort();
+    console.log(arr); //print: [1, 3, 4, 7]
+    var arr1 = [1, 3, 4, 13, 76, 7];
+    arr1.sort();
+    console.log(arr1);  // print: [1, 13, 3, 4, 7, 76]
+    arr1.sort(function(a, b) {
+      // return a - b;   // 升序的顺序排列
+      return b - a;     // 降序的顺序排列
+    });
+    console.log(arr1);  // print: [76, 13, 7, 4, 3, 1]
+  </script>
+```
+
+##### 13.5.6数组索引方法
+
+| 方法名            | 说明                           | 返回值                                   |
+| ----------------- | ------------------------------ | ---------------------------------------- |
+| indexOf(数组元素) | 数组中查找给定元素的第一个索引 | 如果存在返回索引号  如果不存在，则返回-1 |
+| lastIndexOf()     | 在数组中的最后一个的索引       | 如果存在返回索引号  如果不存在，则返回-1 |
+
+###### 13.5.6-1 indexOf()
+
+```js
+  <script>
+    // indexOf(数组元素)	作用：就是返回该数组元素的索引号	从前面开始查找
+    // 它只返回第一个满足条件的索引号
+    var arr = ['red', 'green', 'blue', 'pink', 'pink'];
+    var arr1 = ['red', 'green', 'blue', 'pink', 'pink'];
+    console.log(arr1.indexOf('pink'));  // print: 3
+    console.log(arr.indexOf('black'));  // print: -1
+  </script>
+```
+
+###### 13.5.6-2 lastIndexOf()
+
+```js
+  <script>
+    // lastIndexOf(数组元素)	作用：就是返回该数组元素的索引号  从后面开始查找
+    // 它只返回第一个满足条件的索引号
+    var arr = ['red', 'green', 'blue', 'pink', 'pink'];
+    var arr1 = ['red', 'green', 'blue', 'pink', 'pink'];
+    console.log(arr.lastIndexOf('pink')); // print: 4
+    console.log(arr.lastIndexOf('black')); // print: -1z
+  </script>
+```
+
+##### 13.5.7案例：数组去重（重点案例）
+
+有一个数组['c', 'a', 'z', 'a', 'x', 'a', 'x', 'c', 'b']，要求去除数组中重复的元素
+
+```
+  <script>
+    function unique(arr) {
+      var newArr = [];
+      for (var i = 0; i < arr.length; i++) {
+        if (newArr.indexOf(arr[i]) === -1 ) {
+          newArr.push(arr[i]);
+        }
+      }
+      return newArr;
+    }
+    var demo = unique(['c', 'a', 'z', 'a', 'x', 'a', 'x', 'c', 'b']);
+    console.log(demo);
+  </script>
+```
+
+##### 13.5.8数组转换为字符串
+
+| 方法名         | 说明                                       | 返回值         |
+| -------------- | ------------------------------------------ | -------------- |
+| toString()     | 把数组转换成字符串，逗号分隔每一项         | 返回一个字符串 |
+| join('分隔符') | 方法用于把数组中的所有元素转换为一个字符串 | 返回一个字符串 |
+
+###### 13.5.8-1 toString()
+
+```js
+  <script>
+    var arr = [1, 2, 3];
+    console.log(arr.toString());  // print: 1,2,3
+    console.log(typeof arr.toString()); // print: string
+  </script>
+```
+
+###### 13.5.8-2 join('分隔符')
+
+```js
+  <script>
+    var arr = ['green', 'blue', 'pink'];
+    console.log(arr.join());  // print: green,blue,pink
+    console.log(arr.join('-')); // print: green-blue-pink
+    console.log(arr.join('&')); // print: green&blue&pink
+  </script>
+```
+
+
+
+#### 13.6字符串对象
+
+
+
+
 
