@@ -3824,11 +3824,382 @@ Date对象是基于1970年1月1日（世界标准时间）起的毫秒数
   </script>
 ```
 
+##### 13.5.9课下查询
 
+| 方法名   | 说明                                   | 返回值                                         |
+| -------- | -------------------------------------- | ---------------------------------------------- |
+| concat() | 连接两个或多个数组，不影响原数组       | 返回一个新的数组                               |
+| slice()  | 数组截取slice(begin, end)              | 返回被截取项目的新数组                         |
+| splice() | 数组删除splice(第几个开始, 要删除个数) | 返回被删除项目的新数组  注意：这个会影响原数组 |
+
+###### 13.5.9-1 concat()
+
+```js
+  <script>
+    var arr = ['green', 'blue', 'pink'];
+    console.log(arr.concat('black')); // print: ["green", "blue", "pink", "black"]
+    console.log(arr.concat('black', 1)); // print: ["green", "blue", "pink", "black", 1]
+    console.log(arr); // print: ["green", "blue", "pink"]
+  </script>
+```
+
+###### 13.5.9-2 slice()
+
+```js
+  <script>
+    var arr = ['green', 'blue', 'pink', 'black'];
+    console.log(arr.slice(1, 2)); // print: ["blue"]
+    console.log((arr.slice(0, 2))); // print: ["green", "blue"]
+    console.log(arr.slice(1, 1));  // print: []
+    console.log(arr.slice(3, 5)); // print: ["black"]
+    console.log(arr.slice(5, 8)); // print: []
+    console.log(arr); // print: ["green", "blue", "pink", "black"]
+  </script>
+```
+
+###### 13.5.9-3 splice()  (重点掌握)
+
+```js
+  <script>
+    var arr = ['green', 'blue', 'pink', 'black', 'yellow'];
+    console.log(arr.splice(0, 2)); // print: ["green", "blue"]
+    console.log(arr); // print: ["pink", "black", "yellow"]
+    console.log(arr.splice(5, 2)); // print: []
+    console.log(arr); // print: ["pink", "black", "yellow"]
+    console.log(arr.splice(-1, 1)); // print: ["yellow"]
+    console.log(arr); // print: ["pink", "black"]
+    console.log(arr.splice(-1, 3)); // print: ["black"]
+    console.log(arr); // print: ["pink"]
+  </script>
+```
 
 #### 13.6字符串对象
 
+##### 13.6.1基本包装类型
 
+为了方便操作基本数据类型，JavaScript还提供了三种特殊的引用类型：String、Number和Boolean
 
+**基本包装类型**就是把简单数据类型包装成为复杂数据类型，这样基本数据类型就有了属性和方法。
 
+**执行过程**：
+
+```js
+var str = 'andy';
+console.log(str.length);
+```
+
+对象才有属性和方法	复杂数据类型才有属性和方法
+
+简单数据类型为什么会有length属性呢？
+
+基本包装类型：就是把简单数据类型包装成为了复杂数据类型
+
+（1）把简单数据类型包装成复杂数据类型
+
+```js
+var temp = new String('andy');
+```
+
+（2）把临时变量的值	给	str
+
+```js
+str = temp;
+```
+
+（3）销毁这个临时变量
+
+```js
+temp = null;
+```
+
+##### 13.6.2字符串的不可变
+
+指的是里面的值不可变，虽然看上去可以改变内容，但其实是地址变了，内存中开辟了一个内存空间
+
+字符串不可变，所以**不要大量拼接字符串**。
+
+##### 13.6.3根据字符返回位置
+
+字符串所有的方法，都不会修改字符串本身（字符串是不可变的），操作完成会返回一个新的字符串。
+
+| 方法民                              | 说明                                                         |
+| ----------------------------------- | ------------------------------------------------------------ |
+| indexOf('要查找的字符', 开始的位置) | 返回指定内容在原字符串中的位置，如果找不到就返回-1，开始的位置是index索引号 |
+| lastIndexOf()                       | 从后往前找，只找第一个匹配的                                 |
+
+```js
+  <script>
+    var str = '改革春风吹满地，春天来了';
+    console.log(str.indexOf('春')); // print: 2
+    console.log(str.indexOf('春', 3)); // print: 8
+    console.log(str.length); // print: 12
+    console.log(str.lastIndexOf('春', 9));  // print: 8
+    console.log(str.lastIndexOf('春', 8));  // print: 8
+    console.log(str.lastIndexOf('春', 7));  // print: 2
+  </script>
+```
+
+##### 13.6.4案例：返回字符位置
+
+查找字符串"abcoefoxyozzopp"中所有o出现的位置以及次数
+
+```js
+  <script>
+    var str = "abcoefoxyozzopp";
+    var index = str.indexOf('o');
+    var num = 0;
+    while (index !== -1) {
+      console.log(index);
+      index = str.indexOf('o', index + 1);
+      num++;
+    }
+    console.log(num);
+  </script>
+```
+
+##### 13.6.5课后作业
+
+有这样一个数组['red', 'blue', 'red', 'green', 'pink', 'red']，求这个red出现的位置和次数
+
+```js
+  <script>
+    function getString(str) {
+      var num = 0;
+      var index = str.indexOf('red');
+      while (index !== -1) {
+        console.log(index);
+        index = str.indexOf('red', index + 1);
+        num++
+      }
+      console.log('red出现的次数：' + num);
+    }
+    var arr = ['red', 'blue', 'red', 'green', 'pink', 'red'];
+    var str = arr.toString();
+    console.log(str);
+    getString(str);
+  </script>
+```
+
+##### 13.6.6根据位置返回字符（重点）
+
+| 方法名            | 说明                                     | 使用                          |
+| ----------------- | ---------------------------------------- | ----------------------------- |
+| charAt(index)     | 返回指定位置的字符(index字符串的索引号)  | str.charAt(0)                 |
+| charCodeAt(index) | 获取指定位置的字符的ASCII码(index索引号) | str.charCodeAt(0)             |
+| str[index]        | 获取指定位置的字符                       | HTML5, IE8+支持和charAt()等效 |
+
+```js
+  <script>
+    var str = 'andy';
+    console.log(str.charAt(3));   // print: y
+    for (var i = 0; i < str.length; i++) {
+      console.log(str.charAt(i));
+    }
+    console.log(str.charCodeAt(0));   // print: 97
+    for (var i = 0; i < str.length; i++) {
+      console.log(str.charCodeAt(i));
+    }
+    console.log(str[0]);    // print: a
+    for (var i = 0; i < str.length; i++) {
+      console.log(str[i]);
+    }
+  </script>
+```
+
+##### 13.6.7案例：返回字符位置
+
+判断一个字符串'abcoefoxyozzopp'中出现次数最多的字符，并统计其次数。
+
+1、核心算法：利用charAt()遍历这个字符串
+
+2、把每个字符串存储给对象，如果对象没有该属性，就为1，如果存在就+1
+
+3、遍历对象，得到最大值和该字符
+
+```js
+  <script>
+    // 回顾小知识点
+    // 有一个对象 来判断是否有该属性  对象 ['属性名']
+    var obj = {
+      age: 18
+    }
+    if (obj['sex']) {
+      console.log('里面有该属性');
+    } else {
+      console.log('里面没有该属性');
+    }
+  </script>
+```
+
+```js
+  <script>
+    var str = 'abcoefoxyozzopp';
+    var obj = {};
+    for (var i = 0; i < str.length; i++) {
+      var chars = str.charAt(i);
+      if(obj[chars]) {
+        obj[chars]++;
+      } else {
+        obj[chars] = 1;
+      }
+    }
+    // console.log(obj);
+    var max = 0;
+    var ch = '';
+    for (var k in obj) {
+      // k 得到的是 属性名
+      // o[k] 得到的是 属性值
+      if (obj[k] > max) {
+        max = obj[k];
+        ch = k;
+      }
+    }
+    console.log(ch);
+    console.log(max);
+  </script>
+```
+
+##### 13.6.8字符串操作方法（重点）
+
+| 方法名                      | 说明                                                         |
+| --------------------------- | ------------------------------------------------------------ |
+| concat(str1, str2, str3...) | concat()方法用于连接两个或多个字符串。拼接字符串，等效于+，+更常用 |
+| substr(start, length)       | 从start位置开始（索引号），length取的个数  **重点**记住这个  |
+| slice(start, end)           | 从start位置开始，截取到end位置，end取不到（他两都是索引号）  |
+| substring(start, end)       | 从start位置开始，截取到end位置，end取不到，基本和slice相同  但是不接受负值 |
+
+```js
+  <script>
+    // concat()
+    var str = 'andy';
+    console.log(str.concat('red')); // print: andyred
+		// substr()
+    var str1 = '改革春风吹满地';
+    console.log(str1.substr(2, 2)); // print: 春风
+  </script>
+```
+
+##### 13.6.9替换字符串以及转换为数组
+
+1、替换字符 replace('被替换的字符', '替换为的字符')	他只会替换满足条件的第一个字符
+
+```js
+  <script>
+    var str = 'andyandy';
+    console.log(str.replace('a', 'b')); // print: bndyandy
+    // 有一个字符串 'abcoefoxyozzopp' 要求把里面所有的'o'替换为'*'
+    var str1 = 'abcoefoxyozzopp';
+    while (str1.indexOf('o') !== -1) {
+      str1 = str1.replace('o', '*');
+    }
+    console.log(str1);
+  </script>
+```
+
+2、字符转换为数组 split('分隔符')	前面我们学过 join 把数组转换为字符串
+
+```js
+  <script>
+    var str = 'red, pink, blue';
+    console.log(str.split(', '));
+    var str1 = 'red&pink&blue';
+    console.log(str1.split('&'));
+  </script>
+```
+
+##### 13.6.10课下查询
+
++ toUpperCase()		转换大写
+
++ toLowerCase()        转换小写
+
+```js
+  <script>
+    var str = 'I\'m Hero!';
+    console.log(str.toUpperCase()); // print: I'M HERO!
+    console.log(str.toLowerCase()); // print: i'm hero!
+  </script>
+```
+
+### 14.简单和复杂数据类型
+
+#### 14.1简单类型和复杂类型
+
+简单类型又叫做基本数据类型或者**值类型**，复杂类型又叫做**引用类型**
+
++ 值类型：简单数据类型/基本数据类型，在存储时变量中存储的是值本身，因此叫做值类型
+
+  string，number，boolean，undefined，null
+
+```js
+  <script>
+    // 简单数据类型 null  返回的是一个空的对象  object
+    var timer = null;
+    console.log(typeof timer); // print: object
+    // 如果有个变量我们以后打算存储为对象，暂时没想好放啥，这个时候就给null
+  </script>
+```
+
++ 引用类型：复杂数据类型，在存储时变量中存储的仅仅是地址（引用），因此叫做引用数据类型
+
+  通过new关键字创建的对象（系统对象、自定义对象），如Object、Array、Date等
+
+#### 14.2堆和栈
+
+堆栈空间分配区别：
+
+1、栈（操作系统）：由操作系统自动分配释放存放函数的参数值、局部变量的值等。其操作方式类似于数据结构中的栈；
+	  **简单数据类型存放到栈里面**
+
+2、堆（操作系统）：存储复杂类型（对象），一般由程序员分配释放，若程序员不释放，由垃圾回收机制回收。
+	  **复杂数据类型存放在堆里面**
+
+**注意：JavaScript中没有堆栈的概念，通过堆栈的方式，可以让大家更容易理解代码的一些执行方式，便于将来学习其他语言。**
+
+#### 14.3简单类型的内存分配
+
++ 值类型（简单数据类型）：string，number，boolean，undefined，null
++ 值类型变量的数据直接存放在变量（栈空间）中
+
+#### 14.4复杂类型的内存分配
+
++ 引用类型（复杂数据类型）：通过new关键字创建的对象（系统对象、自定义对象），如Object、Array、Date等
++ 引用类型变量（栈空间）里存放的是地址，真正的对象实例存放在堆空间中
+
+#### 14.5简单类型传参
+
+函数的形参也可以看作是一个变量，当我们把一个值类型变量作为参数传给函数的形参时，其实是把变量在栈空间里的值复制了一份给形参，那么在方法内部对形参做任何修改，都不会影响到的外部变量。
+
+```js
+  <script>
+    function fn(a) {
+      a++;
+      console.log(a); // print: 11
+    }
+    var x = 10;
+    fn(x);
+    console.log(x); // print: 10
+  </script>
+```
+
+#### 14.6复杂类型传参
+
+函数的形参也可以看作是一个变量，当我们把引用类型变量传给形参时，其实是把变量在栈空间里保存的堆地址复制给了形参，形参和实参其实保存的是同一个堆地址，所以操作的是同一个对象。
+
+```js
+  <script>
+    function Person(name) {
+      this.name = name;
+    }
+    function f1(x) {        // x = p
+      console.log(x.name);  // print: 刘德华
+      x.name = '张学友';
+      console.log(x.name);  // print: 张学友
+    }
+    var p = new Person('刘德华');
+    console.log((p.name));  // print: 刘德华
+    f1(p);
+    console.log(p.name);    // print: 张学友
+  </script>
+```
 
