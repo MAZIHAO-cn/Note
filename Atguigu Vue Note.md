@@ -690,7 +690,7 @@
     },
     // 第一种：
     watch: {
-      isHot: {
+      isHots: {
         immediate: true, // 初始化时让handler调用一下
         // handler什么时候调用？
         // 当isHot发生改变时
@@ -1741,6 +1741,12 @@ Vue监视数据的原理：
 </div>
 <script>
   Vue.config.productionTip = false
+
+  // 全局过滤器
+  Vue.filter('mySlice', function(value) {
+    return value.slice(0, 4)
+  })
+
   new Vue({
     el: '#root',
     data: {
@@ -1753,7 +1759,6 @@ Vue监视数据的原理：
     },
     methods: {
       getFmtTime() {
-        // 调dayjs第三方库,在BootCDN官方下载
         return dayjs(this.time).format('YYYY-MM-DD HH:mm:ss')
       }
     },
@@ -2075,7 +2080,1952 @@ Vue.directive(指令名, 配置对象) 或   Vue.directive(指令名, 回调函�
 
 #### 045_引出生命周期
 
-```html
+生命周期： 	
 
+1. 又名：生命周期回调函数、生命周期函数、生命周期钩子。 
+2. 是什么：Vue在关键时刻帮我们调用的一些特殊名称的函数。 	
+3. 生命周期函数的名字不可更改，但函数的具体内容是程序员根据需求编写的。 
+4. 生命周期函数中的this指向是vm 或 组件实例对象。这意味着你不能使用箭头函数来定义一个生命周期方法 (例如 created: () => this.fetchTodos())。
+
+
+
+```html
+<div id="root">
+  <!-- 完整写法 -->
+  <h2 :style="{opacity: opacity}">欢迎学习Vue</h2>
+  <!-- ES6 增强版简写 -->
+  <h2 :style="{opacity}">欢迎学习Vue</h2>
+  <h2 v-if="a">你好啊</h2>
+</div>
+
+<script>
+  Vue.config.productionTip = false
+  new Vue({
+    el: '#root',
+    data: {
+      a: false,
+      opacity: 1
+    },
+    methods: {
+
+    },
+    // Vue 完成模版的解析并把初始的真实DOM元素放入页面后，（挂载完毕）调用mounted
+    mounted() {
+      console.log('mount', this);
+      setInterval(() => {
+        this.opacity -= 0.01
+        if (this.opacity <= 0) {
+          this.opacity = 1
+        }
+      }, 16);
+    }
+  })
+
+  // 外部定时器（不推荐）
+  // setInterval(() => {
+  //     vm.opacity -= 0.01
+  //     if (vm.opacity <= 0) {
+  //         vm.opacity = 1
+  //     }
+  // }, 16);
+</script>
 ```
 
+#### 046_生命周期——挂载、更新、销毁
+
+```html
+<div id="root" :x="n">
+  <h2 v-text="n"></h2>
+  <h2>当前的n值是：{{n}}</h2>
+  <button @click="add">点我n+1</button>
+  <button @click="bye">点我销毁vm</button>
+</div>
+<script>
+  Vue.config.productionTip = false;
+  new Vue({
+    el: '#root',
+    // template: `
+    // <div>
+    //     <h2>当前的n值是：{{n}}</h2>
+    //     <button @click="add">点我n+1</button>    
+    // </div>
+    // `,
+    // 使用template模板，容器内就不用放入内容了，不过template模板解析的时候会将外面的root容器给覆盖掉。
+    // 而且template模板只能有一个根元素，所以必须用div 将h2与button包裹起来，否则报错
+    data: {
+      n: 1
+    },
+    methods: {
+      add() {
+        console.log('add');
+        this.n++
+      },
+      bye() {
+        console.log('bye');
+        this.$destroy()
+      }
+    },
+    watch: {
+      n() {
+        console.log('n变了');
+      }
+    },
+
+    // （一）挂载流程
+    beforeCreate() {
+      //看图：这里是指数据代理和数据监测创建之前，不是vm
+      console.log('beforeCreate');
+      console.log(this); // this指向vm实例对象
+      // 此时打开控制台可以看到data中无数据，无methods方法
+    },
+    created() {
+      console.log('create');
+      console.log(this); // this指向vm实例对象
+      // 此时打开控制台可以看到data中有数据，有add，bye方法
+    },
+    beforeMount() {
+      console.log('beforeMount');
+      console.log(this); // this指向vm实例对象
+      // 元素都加载完成（未经编译），但还没有挂载上去，HTML的body结构里呈现的依然是模板
+      // 在这里面操作DOM白操作，最终会被虚拟dom转换成的真实dom覆盖掉                
+    },
+    mounted() {
+      console.log('mounted');
+      console.log(this, this.$el); // this指向vm实例对象
+      // 元素都加载完成（编译完成），已经挂载上去了，HTML的body结构里呈现的你想让他呈现的样子
+      // 在这里面操作DOM有效，但不推荐
+    },
+
+    // （二）更新流程
+    beforeUpdate() {
+      console.log('beforeUpdate');
+      // console.log(this.n)
+      // 更新数据时调用，数据为新的，但页面还是旧的，尚未更新
+    },
+    updated() {
+      console.log('updated');
+      // console.log(this.n);
+      // 数据为新的，但页面也是新的，数据与页面保持同步
+    },
+    beforeDestroy() {
+      console.log('beforeDestroy');
+      console.log(this.n);
+    },
+    destroyed() {
+      console.log('destroyed');
+      // 点击销毁vm，能打印出n，调用了add方法，但页面不再更新，即到了这个阶段，
+      // 能够访问到数据，调用方法， 但所有对数据的修改不会再触发更新了。
+      // 此时vm中的data methods 指令等都处于可用状态，马上要执行销毁过程，
+      // 一般在此阶段：关闭定时器，取消订阅消息，解绑自定义事件等收尾操作
+    }
+  })
+</script>
+```
+
+#### 047_生命周期总结
+
+常用的生命周期钩子：
+
+1. mounted: 发送ajax请求、启动定时器、绑定自定义事件、订阅消息等【初始化操作】。
+
+2. beforeDestroy: 清除定时器、解绑自定义事件、取消订阅消息等【收尾工作】。
+
+关于销毁Vue实例
+
+1. 销毁后借助Vue开发者工具看不到任何信息。
+
+2. 销毁后自定义事件会失效，但原生DOM事件依然有效。
+
+3. 一般不会在beforeDestroy操作数据，因为即便操作数据，也不会再触发更新流程了。
+
+```html
+<body>
+  <!-- 准备好一个容器 -->
+  <!-- 一个容器对应多个实例 -->
+  <div id="root">
+    <hello></hello>
+    <h1>{{msg}}</h1>
+    <hr>
+    <!-- 第三步：编写组件标签 -->
+    <school></school>
+    <school></school>
+    <hr>
+    <!-- 第三步：编写组件标签 -->
+    <student></student>
+  </div>
+  <hr>
+  <hr>
+  <div id="root2">
+    <hello></hello>
+    <student></student>
+    <school></school>
+  </div>
+</body>
+<script type="text/javascript">
+  Vue.config.productionTip = false
+
+  // 第一步：创建一个school组件
+  const school = Vue.extend({
+    // el: '#root',
+    // 组件定义时，一定不要写el配置项，因为最终所有的组件都要被一个vm管理，
+    // 由vm决定服务于哪个容器。
+    template: `
+            <div>
+                <h2>学校名称：{{name}}</h2>
+                <h2>学校地址：{{address}}</h2> 
+                <button @click="showName">点我提示学校名</button>   
+  </div>
+        `,
+    data() {
+      return {
+        name: '尚硅谷',
+        address: '北京'
+      }
+    },
+    methods: {
+      showName() {
+        alert(this.name)
+      }
+    }
+  })
+
+  // 第一步：创建一个student组件
+  const student = Vue.extend({
+    template: `
+            <div>
+                <h2>学生名称：{{name}}</h2>
+                <h2>学生年龄：{{age}}</h2>        
+  </div>
+        `,
+    data() {
+      return {
+        name: '张三',
+        age: 18
+      }
+    }
+  })
+
+  // 1：创建一个hello组件
+  const hello = Vue.extend({
+    template: `
+            <div>
+                <h2>你好啊! {{name}}</h2>    
+  </div>
+        `,
+    data() {
+      return {
+        name: '李四'
+      }
+    }
+  })
+
+  // 2：全局注册组件
+  Vue.component('hello', hello)
+
+  // 创建vue实例
+  new Vue({
+    el: '#root',
+    // 第二步： 组件注册（ 局部注册）
+    components: {
+      school: school,
+      student: student
+    },
+    data: {
+      msg: '你好啊！'
+    }
+  })
+
+  new Vue({
+    el: '#root2',
+    data: {
+
+    },
+    components: {
+      student,
+      school
+    }
+  })
+</script>
+```
+
+#### 048_非单文件组件使用
+
+```html
+<div id="root">
+  <hello></hello>
+  <h1>{{msg}}</h1>
+  <hr>
+  <!-- 第三步：编写组件标签 -->
+  <school></school>
+  <school></school>
+  <hr>
+  <!-- 第三步：编写组件标签 -->
+  <student></student>
+</div>
+<hr>
+<hr>
+<div id="root2">
+  <hello></hello>
+  <student></student>
+  <school></school>
+</div>
+<script type="text/javascript">
+  Vue.config.productionTip = false
+
+  // 第一步：创建一个school组件
+  const school = Vue.extend({
+    // el: '#root',
+    // 组件定义时，一定不要写el配置项，因为最终所有的组件都要被一个vm管理，
+    // 由vm决定服务于哪个容器。
+    template: `
+                <div>
+                    <h2>学校名称：{{name}}</h2>
+                    <h2>学校地址：{{address}}</h2> 
+                    <button @click="showName">点我提示学校名</button>   
+  </div>
+            `,
+    data() {
+      return {
+        name: '尚硅谷',
+        address: '北京'
+      }
+    },
+    methods: {
+      showName() {
+        alert(this.name)
+      }
+    }
+  })
+
+  // 第一步：创建一个student组件
+  const student = Vue.extend({
+    template: `
+                <div>
+                    <h2>学生名称：{{name}}</h2>
+                    <h2>学生年龄：{{age}}</h2>        
+  </div>
+            `,
+    data() {
+      return {
+        name: '张三',
+        age: 18
+      }
+    }
+  })
+
+  // 1：创建一个hello组件
+  const hello = Vue.extend({
+    template: `
+                <div>
+                    <h2>你好啊! {{name}}</h2>    
+  </div>
+            `,
+    data() {
+      return {
+        name: '李四'
+      }
+    }
+  })
+
+  // 2：全局注册组件
+  Vue.component('hello', hello)
+
+  // 创建vue实例
+  new Vue({
+    el: '#root',
+    // 第二步： 组件注册（ 局部注册）
+    components: {
+      school: school,
+      student: student
+    },
+    data: {
+      msg: '你好啊！'
+    }
+  })
+
+  new Vue({
+    el: '#root2',
+    data: {
+
+    },
+    components: {
+      student,
+      school
+    }
+  })
+</script>
+```
+
+#### 049_组件的几个注意点
+
+几个注意点：
+
+​    1.关于组件名:
+
+​        一个单词组成：
+
+​            第一种写法(首字母小写)：school
+
+​            第二种写法(首字母大写)：School
+
+​        多个单词组成：
+
+​            第一种写法(kebab-case命名)："my-school"
+
+​            第二种写法(CamelCase命名)：MySchool (需要Vue脚手架支持)
+
+​    备注：
+
+​		1. 组件名尽可能回避HTML中已有的元素名称，例如：h2、H2都不行。
+
+​		2. 可以使用name配置项指定组件在开发者工具中呈现的名字。
+
+​    2.关于组件标签:
+
+​        第一种写法：<school></school>
+
+​        第二种写法：<school/>
+
+​        备注：不用使用脚手架时，<school/>会导致后续组件不能渲染。
+
+​        3.一个简写方式：
+
+```js
+ const school = Vue.extend(options) 可简写为：const school = options
+```
+
+```html
+<div id="root">
+        <h1>{{msg}}</h1>
+        <my-school></my-school>
+        <hr>
+        <my-school/>
+    </div>
+    <script>
+        Vue.config.productionTip = false
+
+        // 传统写法：
+        const s = Vue.extend({
+            name: 'atguigu',
+            template: `
+                <div>
+                    <h2>学校名称：{{name}}</h2>
+                    <h2>学校地址：{{address}}</h2>    
+                </div>
+            `,
+            data() {
+                return {
+                    name: '尚硅谷',
+                    address: '北京'
+                }
+            }
+        })
+
+        // 简写：
+        // const s = {
+        //     name: 'atguigu',
+        //     template: `
+        //         <div>
+        //             <h2>学校名称：{{name}}</h2>
+        //             <h2>学校地址：{{address}}</h2>    
+        //         </div>
+        //     `,
+        //     data() {
+        //         return {
+        //             name: '尚硅谷',
+        //             address: '北京'
+        //         }
+        //     }
+        // }
+
+        new Vue({
+            el: '#root',
+            data: {
+                msg: '欢迎来到尚硅谷'
+            },
+            components: {
+                'my-school': s
+            }
+        })
+    </script>
+```
+
+#### 050_组件的嵌套
+
+```html
+<div id="root">
+
+</div>
+<script>
+  Vue.config.productionTip = false
+
+  // 定义student组件
+  const student = Vue.extend({
+    template: `
+                  <div>
+                      <h2>学生名称：{{name}}</h2>
+                      <h2>学生年龄：{{age}}</h2>    
+  </div>
+              `,
+    data() {
+      return {
+        name: '张三',
+        age: 18
+      }
+    }
+  })
+
+  // 定义school组件
+  const school = Vue.extend({
+    // name: 'atguigu',
+    template: `
+                  <div>
+                      <h2>学校名称：{{name}}</h2>
+                      <h2>学校地址：{{address}}</h2> 
+                      <student></student>   
+  </div>
+              `,
+    data() {
+      return {
+        name: '尚硅谷',
+        address: '北京'
+      }
+    },
+    components: {
+      student
+    }
+  })
+
+  // 定义hello组件
+  const hello = Vue.extend({
+    template: `
+                  <h1>{{msg}}</h1>
+              `,
+    data() {
+      return {
+        msg: 'hello'
+      }
+    },
+    components: {}
+  })
+
+  // 定义app组件
+  const app = Vue.extend({
+    template: `
+                  <div>
+                      <school></school>
+                      <hello></hello>    
+  </div>
+              `,
+    data() {
+      return {}
+    },
+    components: {
+      school,
+      hello
+    }
+  })
+
+  // 创建vm
+  new Vue({
+    template: `<app></app>`,
+    el: '#root',
+    data: {},
+    components: {
+      app
+    }
+  })
+</script>
+```
+
+#### 051_VueComponent
+
+关于VueComponent：
+
+1. school组件本质是一个名为VueComponent的构造函数，且不是程序员定义的，是Vue.extend生成的。
+
+2. 我们只需要写<school/>或<school></school>，Vue解析时会帮我们创建school组件的实例对象，
+
+​      	即Vue帮我们执行的：new VueComponent(options)。
+
+3. 特别注意：每次调用Vue.extend，返回的都是一个全新的VueComponent！！！！
+
+4. 关于this指向：
+   1. 组件配置中：
+
+​      	data函数、methods中的函数、watch中的函数、computed中的函数 ，它们的this均是【VueComponent实例对象】。
+
+​		 2.  new Vue(options)配置中：
+
+​      	data函数、methods中的函数、watch中的函数、computed中的函数 它们的this均是【Vue实例对象】。
+
+5. VueComponent的实例对象，以后简称vc（也可称之为：组件实例对象）。
+
+​    	Vue的实例对象，以后简称vm。vm管理着vc
+
+```html
+<div id="root">
+  <school></school>
+  <hello></hello>
+</div>
+<script>
+  Vue.config.productionTip = false
+
+  const school = Vue.extend({
+    // name: 'atguigu',
+    template: `
+                <div>
+                    <h2>学校名称：{{name}}</h2>
+                    <h2>学校地址：{{address}}</h2> 
+                    <button @click="showName">点我提示学校名</button>  
+  </div>
+            `,
+    data() {
+      return {
+        name: '尚硅谷',
+        address: '北京'
+      }
+    },
+    methods: {
+      showName() {
+        alert(this.name)
+      }
+    }
+  })
+
+  console.log('@', school);
+  /* print: ƒ VueComponent(options) {
+              this._init(options);
+              } */
+
+  const test = Vue.extend({
+    template: `
+                <span>atguigu</span>
+            `
+  })
+
+  const hello = Vue.extend({
+    template: `
+                <div>
+                    <h2>{{msg}}</h2>
+                    <test></test>  
+  </div>
+            `,
+    data() {
+      return {
+        msg: 'hello'
+      }
+    },
+    components: {
+      test
+    }
+  })
+
+  console.log('#', hello);
+
+  const vm = new Vue({
+    el: '#root',
+    data: {
+
+    },
+    components: {
+      school,
+      hello
+    }
+  })
+</script>
+```
+
+#### 052_一个重要的内置关系
+
+1. 一个重要的内置关系：VueComponent.prototype.__proto__ === Vue.prototype
+
+2. 为什么要有这个关系：让组件实例对象（vc）可以访问到 Vue原型上的属性、方法。
+
+
+
+1. Vue构造函数:
+
+Vue构造函数的prototype是Vue的原型对象
+
+2. vm（Vue构造函数构造的实例对象）：
+
+vm对象的原型等于其构造函数的prototype，即是Vue的prototype,即指向Vue的原型对象：vm.__proto__===Vue.prototype
+
+3. Vue的原型对象的原型：
+
+即Vue.prototype.__proto__等于其构造函数的prototype：Vue.prototype.__proto__===Object.prototype
+
+4. VueComponent构造函数：
+
+VueComponent构造函数的prototype是VueComponent的原型对象
+
+5. vc（VueComponent构造函数构造的实例对象）：
+
+vc对象的原型等于其构造函数的prototype，即是VueComponent的prototype,即指向VueComponent的原型对象：
+
+6. 最后，强行改变VueComponent原型对象的.__proto__指向，让其指向从Object原型对象到Vue的原型对象
+
+VueComponent.prototype.__proto__ === Vue.prototype
+
+```html
+<div id="root">
+  <school></school>
+
+</div>
+<script>
+  Vue.config.productionTip = false;
+  Vue.prototype.x = 99
+
+  // 定义school组件
+  const school = Vue.extend({
+    // name: 'atguigu',
+    template: `
+                <div>
+                    <h2>学校名称：{{name}}</h2>
+                    <h2>学校地址：{{address}}</h2> 
+                    <button @click="printx">点我输出x</button>
+  </div>
+            `,
+    data() {
+      return {
+        name: '尚硅谷',
+        address: '北京',
+        // x: 99
+      }
+    },
+    methods: {
+      printx() {
+        console.log(this.x);
+      }
+    }
+  })
+
+  // 定义一个Demo构造函数
+  function Demo() {
+    this.a = 1;
+    this.b = 2;
+  }
+
+  // 创建一个vm
+  const vm = new Vue({
+    el: '#root',
+    data: {
+      msg: '你好'
+    },
+    components: {
+      school
+    },
+  })
+
+
+
+  console.log(school.prototype.__proto__ === Vue.prototype); // print: true
+
+
+  // 创建一个Demo的实例对象
+  const demo = new Demo()
+
+  console.log(vm);
+
+  console.log(Demo.prototype); // 显式原型属性
+  console.log(demo.__proto__); // 隐式原型属性
+
+  // 程序员通过显示原型属性操作原型对象，追加一个x属性，值为99
+  Demo.prototype.x = 99;
+  console.log('@', Demo.prototype.x);
+  console.log('#', demo.__proto__.x);
+  console.log('#', demo.x);
+  console.log(Demo.prototype === demo.__proto__); // print: true
+</script>
+```
+
+#### 053_单文件组件
+
+App.vue
+
+```vue
+<template>
+  <div>
+      <School/>
+      <Student/>
+  </div>
+</template>
+<script>
+    import School from './School.vue'
+    import Student from './Student.vue'
+    export default {
+        name: 'App',
+        components: {
+            School,
+            Student
+        }
+    }   
+</script>
+```
+
+School.vue
+
+```vue
+<template>
+    <div class="demo">
+        <h2>学校名称：{{name}}</h2>
+        <h2>学校地址：{{address}}</h2> 
+        <button @click="showName">点我提示学校名</button>   
+    </div>
+</template>
+<script>
+    // 组件交互相关的代码（数据、方法等）
+    // 1. 分别暴露
+    // export const school = Vue.extend({
+    //     data() {
+    //             return {
+    //                 name: '尚硅谷',
+    //                 address: '北京'
+    //             }
+    //         },
+    //     methods: {
+    //         showName() {
+    //             alert(this.name)
+    //         }
+    //     }
+    // })
+    // export {school} // 2. 统一暴露
+    // export default school // 3. 默认暴露
+
+    // 简写：
+    export default {
+        name: 'School',
+        data() {
+                return {
+                    name: '尚硅谷',
+                    address: '北京'
+                }
+            },
+        methods: {
+            showName() {
+                alert(this.name)
+            }
+        }
+    }
+</script>
+<style>
+    /* 组件的样式 */
+    .demo {
+        background-color: skyblue;
+    }
+</style>
+```
+
+Student.vue
+
+```vue
+<template>
+    <div>
+        <h2>学生姓名：{{name}}</h2>
+        <h2>学生年龄：{{age}}</h2> 
+        <button @click="showName">点我提示学生名</button>   
+    </div>
+</template>
+<script>
+    export default {
+        name: 'Student',
+        data() {
+            return {
+                name: '张三',
+                age: 18
+            }
+        },
+        methods: {
+            showName() {
+                alert(this.name)
+            }
+        },
+    }
+</script>
+```
+
+index.html
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+  </head>
+
+  <body>
+    <div id="root">
+      <App></App>
+    </div>
+    <script src="../js/vue.js"></script>
+    <script src="./main.js"></script>
+  </body>
+</html>
+```
+
+main.js
+
+```js
+import App from './App.vue'
+new Vue({
+    el: '#root',
+    components: {
+        App
+    }
+})
+```
+
+#### 054_ref属性
+
+1. 被用来给元素或子组件注册引用信息（id的替代者）
+
+2. 应用在html标签上获取的是真实DOM元素，应用在组件标签上是组件实例对象（vc）
+
+3. 使用方式：
+   1. 打标识
+   
+   ```html
+   <h1 ref="xxx">...</h1>
+   // 或者
+   <School ref=""></School>
+   ```
+   
+   2. 获取
+   
+   ```vue
+   this.$refs.xxx
+   ```
+
+#### 055_props配置
+
+功能：让组件接受外部传过来的数据
+
+1. 传递数据
+
+```html
+<Demo name="xxx"/>
+```
+
+2. 接收数据
+
+   1. 第一种（只接收）
+
+      ```vue
+      props: ['name']
+      ```
+
+   2. 第二种（限制类型）
+
+      ```vue
+      props: {
+      	name: String
+      }
+      ```
+
+   3. 第三种（限制类型、限制必要性、指定默认值）
+
+      ```vue
+      props: {
+      	name: {
+      		type: String,
+      		required: true,
+      		default: '老王'
+      	}
+      }
+      ```
+
+备注：props是只读的，Vue底层会监测你对props的修改，如果进行了修改，就会发出警告，若业务需求确定需要修改，那么请复制props的内容到data中一份，然后去修改data中的数据（二者名不能一样）
+
+#### 056_mixin（混入）
+
+功能：可以把多个组件共用的配置提取成一个混入对象
+
+使用方式：
+
+ 1. 第一步：定义混合，例如：
+
+    ```vue
+    {
+    	data() {...},
+    	methods: {...},
+    	...
+    }
+    ```
+
+ 2. 第二步：使用混入，例如：
+
+    1. 全局混入：
+
+       ```vue
+       Vue.mixin(xxx)
+       ```
+
+    2. 局部混入：
+
+       ```vue
+       mixins: [xxx, yyy]
+       ```
+
+#### 057_插件
+
+功能：用于增强Vue
+
+本质：包含install方法的一个对象，install的第一个参数是Vue，第二个以后的参数是插件使用者传递的数据。
+
+1. 定义插件：
+
+   ```js
+   Object.install = function (Vue, option) {
+   	// 1. Add global filter
+   	Vue.filter(...)
+   	
+   	// 2. Add global directive
+   	Vue.directive(...)
+   	
+   	// 3. Set global mixin
+   	Vue.mixin(...)
+   	
+   	// 4. Add instance method
+   	Vue.prototype.$myMethod = function() {...}
+   	Vue.prototype.$myProperty = xxx
+   }
+   ```
+
+2. 使用插件：
+
+   ```js
+   Vue.use(plugin, param1, param2, ...)
+   ```
+
+   
+
+#### 058_scoped样式
+
+作用：让样式在局部生效，防止冲突
+
+写法：<style scoped>	
+
+#### 059_TodoList案例
+
+##### 源码：
+
+###### components/MyFooter.vue
+
+```vue
+<template>
+    <div class="todo-footer" v-show="total">
+        <label>
+            <!-- <input type="checkbox" :checked="isAll" @change="checkAll"/> -->
+            <input type="checkbox" v-model="isAll"/>
+        </label>
+        <span>
+            <span>已完成{{doneTotal}}</span> / 全部{{total}}
+        </span>
+        <button class="btn btn-danger" @click="clear">清除已完成任务</button>
+    </div>
+</template>
+
+<script>
+    export default {
+        name: 'MyFooter',
+        props: [
+            'todos',
+            'checkAllTodo',
+            'clearAllTodo'
+        ],
+        computed: {
+            total() {
+                return this.todos.length
+            },
+            doneTotal() {
+                // idea 1:
+                /* let count = 0
+                this.todos.forEach((todo) => {
+                    if(todo.done) {
+                        count++
+                    }
+                });
+                return count */
+
+                // idea 2:
+                return this.todos.reduce((pre, todo) => pre + (todo.done ? 1 : 0), 0)
+                // const x = this.todos.reduce((pre, currentObj) => {
+                //     console.log('@', pre);
+                //     return pre + (currentObj.done ? 1 : 0)
+                // }, 0)
+                // console.log(x);
+            },
+            isAll: {
+                get() {
+                    return this.doneTotal === this.total && this.total > 0
+                },
+                set(val) {
+                    // console.log(val);
+                    this.checkAllTodo(val)
+                }
+            }
+        },
+        methods: {
+            checkAll(e) {
+                // console.log(e.target.checked);
+                console.log(e.target.checked);
+                this.checkAllTodo(e.target.checked)
+            },
+            clear() {
+                this.clearAllTodo()
+            }
+        },
+    }
+</script>
+
+<style scoped>
+    /*footer*/
+    .todo-footer {
+        height: 40px;
+        line-height: 40px;
+        padding-left: 6px;
+        margin-top: 5px;
+    }
+
+    .todo-footer label {
+        display: inline-block;
+        margin-right: 20px;
+        cursor: pointer;
+    }
+
+    .todo-footer label input {
+        position: relative;
+        top: -1px;
+        vertical-align: middle;
+        margin-right: 5px;
+    }
+
+    .todo-footer button {
+        float: right;
+        margin-top: 5px;
+    }
+</style>
+```
+
+###### component/MyHeader.vue
+
+```vue
+<template>
+    <div class="todo-header">
+        <input type="text" placeholder="请输入你的任务名称，按回车键确认" v-model="title" @keyup.enter="add"/>
+    </div>
+</template>
+
+<script>
+    import {nanoid} from 'nanoid'
+    export default {
+        name: 'MyHeader',
+        data() {
+            return {
+                title: ''
+            }
+        },
+        props: ['addTodo'],
+        methods: {
+            add() {
+                // 将用户的输入包装成为一个todo对象
+                const todoObj = {
+                    id: nanoid(),
+                    title: this.title,
+                    done: false
+                }
+                if(!this.title.trim()) {
+                    return alert('输入不能为空，请重新输入')
+                }
+                console.log(todoObj);
+                // console.log(this.title);
+                this.addTodo(todoObj) 
+                this.title = ''
+            }
+        },
+    }
+</script>
+
+<style scoped>
+    /*header*/
+    .todo-header input {
+        width: 560px;
+        height: 28px;
+        font-size: 14px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        padding: 4px 7px;
+    }
+
+    .todo-header input:focus {
+        outline: none;
+        border-color: rgba(82, 168, 236, 0.8);
+        box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
+    }
+</style>
+```
+
+###### component/MyItem.vue
+
+```vue
+<template>
+    <li>
+        <label>
+            <input type="checkbox" :checked="todo.done" @change="handleCheck(todo.id)"/>
+            <!-- 如下代码也能实现功能，但是不推荐使用，因为违反规则，因为修改了props -->
+            <!-- <input type="checkbox" v-model="todo.done"/> -->
+            <span>{{todo.title}}</span>
+        </label>
+        <button class="btn btn-danger" @click="handleDelete(todo.id)">删除</button>
+    </li>
+</template>
+
+<script>
+    export default {
+        name: 'MyItem',
+        props: [
+            'todo',
+            'checkTodo',
+            'deleteTodo'
+        ],
+        // mounted() {
+        //     console.log(this.todo);
+        // },  
+        methods: {
+            // 勾选 or 取消勾选
+            handleCheck(id) {
+                // console.log(id);
+                this.checkTodo(id)
+            },
+            // 删除
+            handleDelete(id) {
+                // confirm() 弹出提示框，会根据布尔值判断是或否来满足用户的需求
+                if(confirm('确定删除吗？')) {
+                    // console.log(id);
+                    this.deleteTodo(id)
+                }
+            }
+        },
+    }
+</script>
+
+<style scoped>
+    /*item*/
+    li {
+        list-style: none;
+        height: 36px;
+        line-height: 36px;
+        padding: 0 5px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    li label {
+        float: left;
+        cursor: pointer;
+    }
+
+    li label li input {
+        vertical-align: middle;
+        margin-right: 6px;
+        position: relative;
+    top: -1px;
+    }
+
+    li button {
+        float: right;
+        display: none;
+        margin-top: 3px;
+    }
+
+    li:before {
+        content: initial;
+    }
+
+    li:last-child {
+        border-bottom: none;
+    }
+
+    li:hover{
+        background-color: #ddd;
+    }
+
+    li:hover button{
+        display: block;
+    }
+</style>
+```
+
+###### component/MyList.vue
+
+```vue
+<template>
+    <div>
+        <ul class="todo-main">
+            <MyItem v-for="todoObj in todos" 
+                :key="todoObj.id" 
+                :todo="todoObj" 
+                :checkTodo="checkTodo"
+                :deleteTodo="deleteTodo"
+            />
+        </ul>
+    </div>
+</template>
+
+<script>
+    import MyItem from './MyItem.vue'
+    export default {
+        name: 'MyList',
+        components: {
+            MyItem
+        },
+        props: [
+            'todos', 
+            'checkTodo', 
+            'deleteTodo'
+        ]
+    }
+</script>
+
+<style scoped>
+    /*main*/
+    .todo-main {
+        margin-left: 0px;
+        border: 1px solid #ddd;
+        border-radius: 2px;
+        padding: 0px;
+    }
+
+    .todo-empty {
+        height: 40px;
+        line-height: 40px;
+        border: 1px solid #ddd;
+        border-radius: 2px;
+        padding-left: 5px;
+        margin-top: 10px;
+    }
+</style>
+```
+
+###### App.vue
+
+```vue
+<template>
+<div id="root">
+  <div class="todo-container">
+    <div class="todo-wrap">
+      <MyHeader :addTodo="addTodo"/>
+      <MyList :todos="todos" 
+              :checkTodo="checkTodo"
+              :deleteTodo="deleteTodo"
+              />
+      <MyFooter :todos="todos" :checkAllTodo="checkAllTodo" :clearAllTodo="clearAllTodo"/>
+  </div>
+  </div>
+  </div>
+</template>
+
+<script>
+  import MyHeader from './components/MyHeader.vue'
+  import MyFooter from './components/MyFooter.vue'
+  import MyList from './components/MyList.vue'
+  export default {
+    name: 'App',
+    components: {
+      MyHeader,
+      MyFooter,
+      MyList
+    },
+    data() {
+      return {
+        todos: JSON.parse(localStorage.getItem('todos')) || []
+      }
+    },
+    methods: {
+      // 添加一个todo
+      addTodo(todoObj) {
+        console.log('App组件收到了数据', todoObj);
+        this.todos.unshift(todoObj)
+      },
+      // 勾选or取消勾选一个todo
+      checkTodo(id) {
+        this.todos.forEach((todo) => {
+          if(todo.id === id) {
+            todo.done = !todo.done
+          }
+        });
+      },
+      // 删除一个todo
+      deleteTodo(id) {
+        this.todos = this.todos.filter(todo => {
+          return todo.id !== id
+        })
+      },
+      // 全选 or 取消全选
+      checkAllTodo(done) {
+        this.todos.forEach(todo => {
+          todo.done = done
+        })
+      },
+      clearAllTodo() {
+        this.todos = this.todos.filter((todo) => {
+          return !todo.done
+        })
+      }
+
+    },
+    watch: {
+      todos: {
+        deep: true,
+        handler(value) {
+          localStorage.setItem('todos', JSON.stringify(value)) 
+        }
+      }
+    }
+  }
+</script>
+
+<style>
+  /* base */
+  body {
+    background: #fff;
+  }
+  .btn {
+    display: inline-block;
+    padding: 4px 12px;
+    margin-bottom: 0;
+    font-size: 14px;
+    line-height: 20px;
+    text-align: center;
+    vertical-align: middle;
+    cursor: pointer;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
+  }
+  .btn-danger {
+    color: #fff;
+    background-color: #da4f49;
+    border: 1px solid #bd362f;
+  }
+  .btn-danger:hover {
+    color: #fff;
+    background-color: #bd362f;
+  }
+  .btn:focus {
+    outline: none;
+  }
+  .todo-container {
+    width: 600px;
+    margin: 0 auto;
+  }
+  .todo-container .todo-wrap {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+</style>
+```
+
+###### main.js
+
+```js
+import Vue from 'vue'
+import App from './App.vue'
+Vue.config.productionTip = false
+
+new Vue({
+    el: '#app',
+    render: h => h(App)
+})
+```
+
+###### vue.config.js
+
+```js
+module.exports = {
+    pages: {
+        index: {
+            entry: 'src/main.js'
+        },
+    },
+    lintOnSave: false
+}
+```
+
+##### 总结：
+
+1. 组件化编码流程：
+   1. 拆分静态组件：组件要按照功能点拆分，命名不要与html元素冲突
+   2. 实现动态组件：考虑好数据的存放位置，数据是一个组件在用，还是一堆组件在用：
+      1. 一个组件在用：放在组件自身即可
+      2. 一堆组件在用：放在他们共用的父组件上（状态提升）
+   3. 实现交互：从绑定事件开始
+2. props适用于：
+   1. 父组件===>子组件 通信
+   2. 子组件===>父组件 通信 （要求父先给子一个函数）
+
+3. 使用v-model时要切记：v-model绑定的值不能是props传过来的值，因为props是不可以修改的
+4. props传过来的若是对象类型的值，修对象中的属性时Vue不会报错，但不推荐这么做
+
+#### 060_浏览器本地存储
+
+1. 存储内容大小一般支持5MB左右（不同浏览器可能还不一样）
+
+2. 浏览器端通过 Window.sessionStorage 和 Window.localStorage 属性来实现本地存储机制。
+
+3. 相关API
+
+   1. ```xxxxxStorage.setItem('key', 'value');```
+
+      ​	该方法接受一个键和值作为参数，会把键值对添加到存储中，如果键名存在，则更新其对应的值。
+
+      ​	值为字符串，如果存入的值为对象，则将其转换为字符串后存入
+
+   2. ```xxxxxStorage.getItem('person');```
+
+      ​    该方法接受一个键名作为参数，返回键名对应的值。对象转字符串后存入，取出后需将其重新转化为对象
+
+   3. ```xxxxxStorage.removeItem('key');```
+
+      ​    该方法接受一个键名作为参数，并把该键名从存储中删除。
+
+   4. ``` xxxxxStorage.clear()```
+
+      ​    该方法会清空存储中的所有数据。
+
+4. 备注：
+
+   1. SessionStorage存储的内容会随着浏览器窗口关闭而消失。
+   2. LocalStorage存储的内容，需要手动清除才会消失。
+   3. ```xxxxxStorage.getItem(xxx)```如果xxx对应的value获取不到，那么getItem的返回值是null。
+   4. ```JSON.parse(null)```的结果依然是null。
+   5. 这两者的API用法一致
+
+```html
+<h2>sessionStorage</h2>
+<button onclick="saveData()">点我保存一个数据</button>
+<button onclick="readData()">点我读取一个数据</button>
+<button onclick="deleteData()">点我删除一个数据</button>
+<button onclick="clearData()">点我清空一个数据</button>
+
+<script>
+  let p = {
+    name: '张三',
+    age: 18
+  }
+
+  function saveData() {
+    sessionStorage.setItem('msg', 'hello!!')
+    sessionStorage.setItem('msg2', 666)
+    sessionStorage.setItem('person', JSON.stringify(p))
+  }
+
+  function readData() {
+    console.log(sessionStorage.getItem('msg'));
+    const result = sessionStorage.getItem('person')
+    console.log(JSON.parse(result));
+    console.log(sessionStorage.getItem('msg2'));
+  }
+
+  function deleteData() {
+    sessionStorage.removeItem('msg2')
+  }
+
+  function clearData() {
+    sessionStorage.clear()
+  }
+</script>
+```
+
+```html
+<h2>LocalStorage</h2>
+<button onclick="saveData()">点我保存一个数据</button>
+<button onclick="readData()">点我读取一个数据</button>
+<button onclick="deleteData()">点我删除一个数据</button>
+<button onclick="clearData()">点我清空一个数据</button>
+
+<script>
+  let p = {
+    name: '张三',
+    age: 18
+  }
+
+  function saveData() {
+    localStorage.setItem('msg', 'hello!!')
+    localStorage.setItem('msg2', 666)
+    localStorage.setItem('person', JSON.stringify(p))
+  }
+
+  function readData() {
+    console.log(localStorage.getItem('msg'));
+    const result = localStorage.getItem('person')
+    console.log(JSON.parse(result));
+    console.log(localStorage.getItem('msg3'));
+  }
+
+  function deleteData() {
+    localStorage.removeItem('msg2')
+  }
+
+  function clearData() {
+    localStorage.clear()
+  }
+</script>
+```
+
+#### 061_组件的自定义事件——绑定
+
+App.vue
+
+```vue
+<template>
+<div class="app">
+  <h1>{{msg}}</h1>
+  <!-- 通过父组件给子组件绑定一个自定义事件实现：子给父传递数据 -->
+  <!-- <Student v-on:atguigu="getStudentName"/> -->
+  <Student @atguigu.once="getStudentName"/>
+
+  <!-- 通过父组件给子组件传递函数类型的props实现：子给父传递数据（第一种写法，使用@或v-on） -->
+  <Student ref="student"/>
+  <hr>
+  <!-- 通过父组件给子组件传递函数类型的props实现：子给父传递数据（第二种写法，使用ref） -->
+  <School :getSchoolName="getSchoolName"/>
+  </div>
+</template>
+
+<script>
+  import School from './components/School.vue'
+  import Student from './components/Student.vue'
+  export default {
+    name: 'App',
+    components: {
+      Student,
+      School
+    },
+    data() {
+      return {
+        msg: '你好啊'
+      }
+    },
+    methods: {
+      getSchoolName(name) {
+        console.log('App收到了学校名：', name);
+      },
+      getStudentName(name, ...param) {
+        console.log('App收到了学生名：', name, param);
+      }
+    },
+    mounted() {
+      // this.$refs.student.$on('atguigu', this.getStudentName) // 绑定自定义事件
+
+      // setTimeout(()=>{
+      //     this.$refs.student.$on('atguigu', this.getStudentName)
+      // },3000)
+
+      this.$refs.student.$once('atguigu', this.getStudentName) // 绑定自定义事件（一次性）
+    },
+  }
+</script>
+<style scoped> 
+  .app{
+    background-color: gray;
+    padding: 5px;
+  }
+</style>
+```
+
+School.vue
+
+```html
+<template>
+  <div class="school">
+    <h2>学校名称：{{name}}</h2>
+    <h2>学校地址：{{address}}</h2>
+    <button @click="sendSchoolName">把学校名给App</button>
+  </div>
+</template>
+
+<script>
+  export default {
+    name: 'Student',
+    props: ['getSchoolName'],
+    data() {
+      return {
+        name: '尚硅谷atguigu',
+        address: '北京',
+      }
+    },
+    methods: {
+      sendSchoolName() {
+        this.getSchoolName(this.name)
+      }
+    },
+  }
+</script>
+
+<style scoped>
+  .school {
+    background-color: skyblue;
+    padding: 5px;
+    margin-top: 30px;
+  }
+
+</style>
+```
+
+Student.vue
+
+```vue
+<template>
+<div class="student">
+  <h2>学生姓名：{{name}}</h2>
+  <h2>学生性别：{{sex}}</h2>
+  <button @click="sendStudentName">把学生名给App</button>
+  </div>
+</template>
+
+<script>
+  export default {
+    name: 'Student',
+    data() {
+      return {
+        name: '张三',
+        sex: '男'
+      }
+    },
+    methods: {
+      sendStudentName() {
+        // 触发Student组件的实例身上的atguigu事件
+        this.$emit('atguigu', this.name, 777, 888, 999)
+      }
+    },
+  }
+</script>
+
+<style lang="less">
+  .student {
+    background-color: orange;
+    padding: 5px;
+  }
+</style>
+```
+
+#### 062_组件的自定义事件——解绑
+
+App.vue
+
+```vue
+<template>
+<div class="app">
+  <h1>{{msg}}，学生名是：{{studentName}}</h1>
+  <!-- 通过父组件给子组件绑定一个自定义事件实现：子给父传递数据 -->
+  <!-- <Student v-on:atguigu="getStudentName"/> -->
+  <!-- <Student @atguigu="getStudentName"  @demo="m1"/> -->
+
+  <!-- 通过父组件给子组件传递函数类型的props实现：子给父传递数据（第一种写法，使用@或v-on） -->
+  <Student ref="student" @click.native="show"/>
+  <hr>
+  <!-- 通过父组件给子组件传递函数类型的props实现：子给父传递数据（第二种写法，使用ref） -->
+  <School :getSchoolName="getSchoolName"/>
+  </div>
+</template>
+
+<script>
+  import School from './components/School.vue'
+  import Student from './components/Student.vue'
+  export default {
+    name: 'App',
+    components: {
+      Student,
+      School
+    },
+    data() {
+      return {
+        msg: '你好啊',
+        studentName: ''
+      }
+    },
+    methods: {
+      getSchoolName(name) {
+        console.log('App收到了学校名：', name);
+      },
+      getStudentName(name, ...param) {
+        console.log('App收到了学生名：', name, param);
+        this.studentName = name
+      },
+      m1() {
+        console.log('demo事件被触发了');
+      },
+      show() {
+        alert(123)
+      }
+    },
+    mounted() {
+      this.$refs.student.$on('atguigu', this.getStudentName)    // 绑定自定义事件
+      // this.$refs.student.$on('atguigu', ((name, param)=>{
+      //    console.log('App收到了学生名：', name, param); 
+      //    this.studentName = name
+      // })) 
+
+      // setTimeout(()=>{
+      //     this.$refs.student.$on('atguigu', this.getStudentName)
+      // },3000)
+
+      // this.$refs.student.$once('atguigu', this.getStudentName) // 绑定自定义事件（一次性）
+    },
+  }
+</script>
+<style scoped> 
+  .app{
+    background-color: gray;
+    padding: 5px;
+  }
+</style>
+```
+
+Student.vue
+
+```vue
+<template>
+  <div class="student">
+      <h2>学生姓名：{{name}}</h2>
+      <h2>学生性别：{{sex}}</h2>
+      <h2>当前求和为{{number}}</h2>
+      <button @click="add">点我number++</button>
+      <button @click="sendStudentName">把学生名给App</button>
+      <button @click="unbind">解绑atguigu事件</button>
+      <button @click="death">销毁当前Student组件的实例对象(vc)</button>
+  </div>
+</template>
+
+<script>
+    export default {
+        name: 'Student',
+        data() {
+            return {
+                name: '张三',
+                sex: '男',
+                number: 0,
+
+            }
+        },
+        methods: {
+            add() {
+                console.log('add回调被调用了');
+                this.number++
+            },
+            sendStudentName() {
+                // 触发Student组件的实例身上的atguigu事件
+                this.$emit('atguigu', this.name, 777, 888, 999)
+                // this.$emit('demo')
+                // this.$emit('click')
+            },
+            unbind() {
+                this.$off('atguigu')    // 只适合解绑一个自定义事件
+                // this.$off(['atguigu', 'demo'])  // 解绑多个自定义事件
+                // this.$off() // 解绑所有自定义事件
+            },
+            death() {
+                this.$destroy() // 销毁了当前Student组件的实例，销毁后所有Student实例的自定义事件全部不奏效
+            }
+        },
+    }
+</script>
+
+<style lang="less">
+    .student {
+        background-color: orange;
+        padding: 5px;
+    }
+</style>
+```
+
+School.vue
+
+```vue
+<template>
+<div class="school">
+  <h2>学校名称：{{name}}</h2>
+  <h2>学校地址：{{address}}</h2>
+  <button @click="sendSchoolName">把学校名给App</button>
+  </div>
+</template>
+
+<script>
+  export default {
+    name: 'Student',
+    props: ['getSchoolName'],
+    data() {
+      return {
+        name: '尚硅谷atguigu',
+        address: '北京',
+      }
+    },
+    methods: {
+      sendSchoolName() {
+        this.getSchoolName(this.name)
+      }
+    },
+  }
+</script>
+
+<style scoped>
+  .school {
+    background-color: skyblue;
+    padding: 5px;
+    margin-top: 30px;
+  }
+
+</style>
+```
+
+main.js
+
+```js
+import Vue from 'vue'
+import App from './App.vue'
+Vue.config.productionTip = false
+new Vue({
+  el: '#app',
+  render: h => h(App),
+  // 验证子组件是否被销毁
+  // mounted() {
+  //     setTimeout(() => {
+  //         this.$destroy()
+  //     }, 1000)
+  // },
+})
+```
+
+#### 063_总结自定义组件
+
+1. 一种组件间通信的方式，适用于：**<span style='color: red;font-size:16px;'> 子组件 ===> 父组件 </span> **
+
+2. 使用场景：A是父组件，B是子组件，B想给A传数据，那么就要在A中给B绑定自定义事件（<span style='color: red;font-size:16px;'> 事件的回调在A中 </span> ）。
+
+3. 绑定自定义事件：
+
+   1. 第一种方式，在父组件中：`<Demo @atguigu="test"/>`  或 `<Demo v-on:atguigu="test"/>`
+
+   2. 第二种方式，在父组件中：
+
+      ```vue
+      <Demo ref="demo"/>
+      ......
+      mounted(){
+         this.$refs.xxx.$on('atguigu',this.test)
+      }
+      ```
+
+   3. 若想让自定义事件只能触发一次，可以使用`once`修饰符，或`$once`方法。
+
+4. 触发自定义事件：`this.$emit('atguigu',数据)`
+
+5. 解绑自定义事件`this.$off('atguigu')`
+
+6. 组件上也可以绑定原生DOM事件，需要使用`native`修饰符,否则会被当成自定义事件。
+
+7. 注意：通过`this.$refs.xxx.$on('atguigu',回调)`绑定自定义事件时，回调<span style='color: red;font-size:16px;'> <span style='color: red;font-size:16px;'> 事件的回调在A中 </span>  </span> ，否则this指向会出问题！
